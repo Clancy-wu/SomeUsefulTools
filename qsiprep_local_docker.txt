@@ -1,0 +1,21 @@
+# qsiprep process with docker
+## two thinigs should be reminder.
+## first, subjects shuold be 'sub-*' format.
+## second, qsiprep contains two steps. preprocess and reconstruction.
+
+# first preprocess
+for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
+		-v /media/clancy/WkPassport/ZhouYing/test:/work \
+		pennbbl/qsiprep:latest \
+		/work/BIDS/ /work/qsiprep/ participant --participant-label NAME \
+		--skip_bids_validation \
+	        --nthreads 1 --omp-nthreads 1 \
+		-w /work/qsiprep_work \
+		--anat-modality T1w \
+		--ignore fieldmaps \
+		--anatomical-template MNI152NLin2009cAsym \
+		--output-resolution 2 \
+		--fs-license-file /work/license.txt \
+		--resource-monitor \
+		--stop-on-first-crash\
+# second reconstruction
