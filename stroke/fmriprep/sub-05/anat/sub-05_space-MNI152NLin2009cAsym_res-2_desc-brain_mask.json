@@ -1,0 +1,5 @@
+{
+  "RawSources": "tpl-MNI152NLin2009cAsym/tpl-MNI152NLin2009cAsym_res-02_desc-brain_mask.nii.gz",
+  "Resolution": "Template MNI152NLin2009cAsym (2.0x2.0x2.0 mm^3), curated by TemplateFlow 23.0.0",
+  "Type": "Brain"
+}

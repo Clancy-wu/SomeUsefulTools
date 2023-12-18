@@ -1,0 +1,24 @@
+#Run fmriprep
+
+docker run --rm -it \
+-v /home/clancy/data/stroke:/work \
+nipreps/fmriprep:v23.1.4 \
+/work/BIDS/ /work/fmriprep/ participant --participant-label sub-05 \
+--skip_bids_validation \
+-w /work/fmriprep_work \
+--clean-workdir \
+--ignore fieldmaps \
+--output-spaces MNI152NLin2009cAsym:res-2 \
+--bold2t1w-init register \
+--bold2t1w-dof 12 --force-bbr \
+--slice-time-ref 0.5 \
+--fd-spike-threshold 0.5 \
+--dvars-spike-threshold 1.5 \
+--skull-strip-fixed-seed \
+--skull-strip-t1w force \
+--fs-license-file /work/license.txt \
+--fs-no-reconall \
+--output-layout bids \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash

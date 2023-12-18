@@ -1,0 +1,84 @@
+[environment]
+cpu_count = 16
+exec_env = "docker"
+free_mem = 114.8
+overcommit_policy = "heuristic"
+overcommit_limit = "50%"
+nipype_version = "1.8.6"
+templateflow_version = "23.0.0"
+version = "23.1.4"
+
+[execution]
+bids_dir = "/work/BIDS"
+bids_database_dir = "/work/fmriprep_work/20231204-213810_f6d45a5c-2b31-41bd-ba5f-296816d54562/bids_db"
+bids_description_hash = "1207cf969f7a63ca35b80b6ee316caa0d228e21d07f5848928eee9809b1b24b5"
+boilerplate_only = false
+sloppy = false
+debug = []
+fmriprep_dir = "/work/fmriprep"
+fs_license_file = "/work/license.txt"
+fs_subjects_dir = "/work/fmriprep/sourcedata/freesurfer"
+layout = "BIDS Layout: .../work/BIDS | Subjects: 2 | Sessions: 0 | Runs: 0"
+log_dir = "/work/fmriprep/logs"
+log_level = 25
+low_mem = false
+md_only_boilerplate = false
+notrack = true
+track_carbon = false
+country_code = "CAN"
+output_dir = "/work/fmriprep"
+me_output_echos = false
+output_layout = "bids"
+output_spaces = "MNI152NLin2009cAsym:res-2"
+reports_only = false
+run_uuid = "20231204-213810_f6d45a5c-2b31-41bd-ba5f-296816d54562"
+participant_label = [ "05",]
+templateflow_home = "/home/fmriprep/.cache/templateflow"
+work_dir = "/work/fmriprep_work"
+write_graph = false
+
+[workflow]
+anat_only = false
+aroma_err_on_warn = false
+aroma_melodic_dim = 0
+bold2t1w_dof = 12
+bold2t1w_init = "register"
+cifti_output = false
+fmap_bspline = false
+force_syn = false
+hires = true
+ignore = [ "fieldmaps",]
+longitudinal = false
+medial_surface_nan = false
+project_goodvoxels = false
+regressors_all_comps = false
+regressors_dvars_th = 1.5
+regressors_fd_th = 0.5
+run_reconall = false
+skull_strip_fixed_seed = true
+skull_strip_template = "OASIS30ANTs"
+skull_strip_t1w = "force"
+slice_time_ref = 0.5
+spaces = "MNI152NLin2009cAsym:res-2"
+use_aroma = false
+use_bbr = true
+use_syn_sdc = false
+me_t2s_fit_method = "curvefit"
+
+[nipype]
+crashfile_format = "txt"
+get_linked_libs = false
+nprocs = 16
+omp_nthreads = 8
+plugin = "MultiProc"
+resource_monitor = true
+stop_on_first_crash = true
+
+[seeds]
+master = 60759
+ants = 57452
+numpy = 17579
+
+[nipype.plugin_args]
+maxtasksperchild = 1
+raise_insufficient = false

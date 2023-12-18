@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#$ -N sub-batchArray_fmriprep
+#$ -pe smp 10
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/eyetrack/2_eyegazefMRI_noise_speech_emotion_all/logs
+#$ -t 1-31:1
+OMP_NUM_THREADS=10
+
+# count file number: ls BIDS | grep sub | wc -l
+# write sublist: ls BIDS | grep sub > sublist
+
+subject=`cat /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/eyetrack/2_eyegazefMRI_noise_speech_emotion_all/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+export TEMPLATEFLOW_HOME=${singularityDir}/TemplateFlow
+export SINGULARITYENV_TEMPLATEFLOW_HOME=/templateflow
+
+##########
+
+#Run fmriprep
+singularity run --cleanenv \
+-B /Users/kangwu/work:/work \
+-B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
+${singularityDir}/fmriprep_v2314_kw.sif \
+/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/eyetrack/2_eyegazefMRI_noise_speech_emotion_all/BIDS/ /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/eyetrack/2_eyegazefMRI_noise_speech_emotion_all/fmriprep/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nprocs 10 --omp-nthreads 10 --mem 32000 \
+-w work \
+--ignore fieldmaps \
+--output-spaces MNI152NLin6Asym:res-2 MNI152NLin2009cAsym:res-2 \
+--bold2t1w-init register \
+--bold2t1w-dof 12 --force-bbr \
+--slice-time-ref 0.5 \
+--fd-spike-threshold 0.5 \
+--dvars-spike-threshold 1.5 \
+--skull-strip-fixed-seed \
+--skull-strip-t1w force \
+--fs-license-file ${singularityDir}/license.txt \
+--fs-no-reconall \
+--output-layout bids \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash
+
+
+==============================================================================
+> qsub fmriprep_run.sh
+Your job-array 208689.1-31:1 ("sub-batchArray_fmriprep") has been submitted
+> qstat | grep kangwu
+> qacct -j 208689.1-31:1 # 208689.1-31:1 is the job id
+> qsub fmriprep_run.sh
+Your job-array 208844.1-31:1 ("sub-batchArray_fmriprep") has been submitted

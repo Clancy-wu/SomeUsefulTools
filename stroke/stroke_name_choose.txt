@@ -1,0 +1,29 @@
+%a_%b_%c_%d_%e_%f_%g_%i_%j_%k_%m_%n_%o_%p_%r_%s_%t_%v_%x_%z
+
+%a_%b_%c_%d: 8HRBRAIN_Z15890_3-Pl_T2_FGRE_i00001.nii.gz
+%e_%f_%g_%i: 1_lishulan-20230606_546779806T87.nii.gz
+%j_%k_%m_%n: 1.2.840.113619.2.408.5554020.7742226.30678.1686009862.300_1.2.840.113619.6.408.57120668313183270003689989492736373021_GE_LI_SHU_LAN_i00001.nii.gz
+%o_%p_%r_%s: 1.2.840.113619.2.408.5554020.7742226.29309.1686010063.969_WU_KANG_1_1.nii.gz
+%t_%v_%x_%z: 20230606145901_GE_23266_.nii.gz
+%c_%d_%m_%n: _3-Pl_T2_FGRE_GE_LI_SHU_LAN_i00001
+useful: 
+%a: 8HRBRAIN
+%b: Z15890
+%c: _3-Pl (recommend)
+%d: T2_FGRE (recommend)
+%m: GE
+%n: LI_SHU_LAN_i00001 (recommend)
+%t: 20230606145901 (recommend)
+
+recommend: %t + %c + %d + %n
+
+original commend: '/home/clancy/MRIcroGL/Resources/dcm2niix -f "%f_%p_%t_%s" -p y -z y -o ' + target_dir + ' ' + dicom_dir
+
+better to use: '/home/clancy/MRIcroGL/Resources/dcm2niix -f "%t_%c_%d_%n" -p y -z y -ba n -o ' + target_dir + ' ' + dicom_dir
+so thus the age and gender can be extracted.
+
+
+
+"%02d"%i
+"{0:0=2d}".format(i)
+f"{i:02}"
