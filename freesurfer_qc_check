@@ -1,0 +1,9 @@
+# this script is processed in bash and is for checking quality control of recon-all of freesurfer
+
+sub='SUB125'
+freeview -v  ${sub}/mri/T1.mgz  \
+${sub}/mri/brainmask.mgz  \
+-f ${sub}/surf/lh.white:edgecolor=yellow \
+${sub}/surf/lh.pial:edgecolor=red \
+${sub}/surf/rh.white:edgecolor=yellow \
+${sub}/surf/rh.pial:edgecolor=red
