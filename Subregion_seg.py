@@ -110,6 +110,8 @@ def run(f, this_iter):
 def freesurfer_segment(sub_name):
     try:
         os.system('segment_subregions hippo-amygdala --cross %s --suffix .%s --out-dir %s' %(sub_name, sub_name, freesurfer_segment_logs))
+        os.system('segment_subregions thalamus --cross %s --suffix .%s --out-dir %s' %(sub_name, sub_name, freesurfer_segment_logs))
+        os.system('segment_subregions brainstem --cross %s --suffix .%s --out-dir %s' %(sub_name, sub_name, freesurfer_segment_logs))        
         return sub_name, 'success'
     except:
         return sub_name, 'error'
