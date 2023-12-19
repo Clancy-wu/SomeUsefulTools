@@ -97,3 +97,27 @@ fi
 recon-all -long ${sub_name} ${sub_basename}_robust_template -all
 echo "freesurfer successfully finished."
 
+##########################################################################################################
+###    Step 4. generate hipoo-amygdala through -long-base segmentation
+ls freesurfer | grep robust_template | grep -v 'long' > sublist_S4
+segment_subregions hippo-amygdala --long-base xx_robust_template
+# hippo-amygdala, thalamus, brainstem
+
+#!/bin/bash
+
+#$ -N hippo-long
+#$ -pe smp 35
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/tms_project_wk/project/logs
+#$ -t 1-51:1
+subject=`cat /Shared/jianglab/3_Data_Working/tms_project_wk/project/sublist_S4 | head -n+${SGE_TASK_ID} | tail -n-1`
+#Set up dependencies
+export FREESURFER_HOME=/Shared/pinc/sharedopt/apps/freesurfer/Linux/x86_64/7.4.0
+export SUBJECTS_DIR=/Shared/jianglab/3_Data_Working/tms_project_wk/project/freesurfer
+export FS_LICENSE=/Shared/jianglab/3_Data_Working/tms_project_wk/project/license.txt
+source ${FREESURFER_HOME}/FreeSurferEnv.sh
+##########
+# freesurfer
+segment_subregions hippo-amygdala --long-base ${subject}
+echo "freesurfer successfully finished."
