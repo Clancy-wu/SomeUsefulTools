@@ -102,6 +102,8 @@ echo "freesurfer successfully finished."
 ls freesurfer | grep robust_template | grep -v 'long' > sublist_S4
 segment_subregions hippo-amygdala --long-base xx_robust_template
 # hippo-amygdala, thalamus, brainstem
+# 17.22 mins per sub. Generate subregion files in each time sub.long.xxtemplate dir,
+# eg. SUB1.long.SUB1_robust_template/mri/lh.hippoAmygLabels.long.FS60.FSvoxelSpace.mgz
 
 #!/bin/bash
 
