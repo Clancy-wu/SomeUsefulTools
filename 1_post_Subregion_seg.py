@@ -17,6 +17,7 @@ class Cleaner:
         self.keep = set(globals());
     def clean(self):
         g = list(globals())
+        g.remove('clean_env') # save clean_env valuble        
         for __i in g:
             if __i not in self.keep:
                 # print("Removing", __i)      # uncomment for tracing what happens
