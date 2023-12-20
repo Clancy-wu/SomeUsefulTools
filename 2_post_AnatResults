@@ -1,1 +1,26 @@
-#!/bin/python310
+#!/bin/bash
+# example:
+# AnatResults includes Area, Curv, Sulc, Thickness, Volume
+# lh/rh.area, .curv, .sulc, .thickness, .volume
+# export SUBJECTS_DIR=/home/clancy/data/tms_project/project/freesurfer
+# mkdir AnatResults/fsnative
+# mkdir AnatResults/fsaverage
+#############################################
+## part 1: fsnative
+#############################################
+# 1. thickness
+mris_convert -c ${SUBJECTS_DIR}/SUB1/surf/lh.thickness ${SUBJECTS_DIR}/SUB1/surf/lh.white /home/clancy/data/tms_project/project/AnatResults/fsnative/SUB1_space-fsnative.thickness.gii
+# 2. area
+mris_convert -c ${SUBJECTS_DIR}/SUB1/surf/lh.area ${SUBJECTS_DIR}/SUB1/surf/lh.white /home/clancy/data/tms_project/project/AnatResults/fsnative/SUB1_space-fsnative.area.gii
+#############################################
+## part 2: fsaverage
+#############################################
+# 1. thickness
+# mri_surf2surf --srcsubject SUB1 --trgsubject fsaverage --hemi lh --sval ${SUBJECTS_DIR}/SUB1/surf/lh.thickness --tval /home/clancy/data/tms_project/project/AnatResults/SUB1_space-fsaverage_hemi-L.thickness.gii 
+# 2. Area
+# mri_surf2surf --srcsubject SUB1 --trgsubject fsaverage --hemi lh --sval ${SUBJECTS_DIR}/SUB1/surf/lh.area --tval /home/clancy/data/tms_project/project/AnatResults/SUB1_space-fsaverage_hemi-L.area.gii 
+#############################################
+## part 3: smooth
+#############################################
+# 5. smooth
+# mri_surf2surf --s %s --hemi rh --sval %s/%s%s/{1}/{1}%s  --fwhm %g --cortex --tval %s/%s%sS/{1}/s{1}%s
