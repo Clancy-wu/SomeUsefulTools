@@ -24,3 +24,122 @@ mris_convert -c ${SUBJECTS_DIR}/SUB1/surf/lh.area ${SUBJECTS_DIR}/SUB1/surf/lh.w
 #############################################
 # 5. smooth
 # mri_surf2surf --s %s --hemi rh --sval %s/%s%s/{1}/{1}%s  --fwhm %g --cortex --tval %s/%s%sS/{1}/s{1}%s
+
+#!/bin/python310
+# this script is to create multiple results from freesurfer, including thickness, area, curv, volume.
+# default setting is to transform to fsaverage and fsnative space.
+
+## import packages
+from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
+from glob import glob
+import re
+import os
+import pandas as pd
+## set Freesurfer (version 7.4.1)
+workd_dir = '/home/kangwu/LSS/jianglab/3_Data_Working/tms_project_wk/project'
+freesurfer_dir = os.path.join(workd_dir, 'freesurfer')
+os.environ['SUBJECTS_DIR'] = freesurfer_dir
+output_dir = os.path.join(workd_dir, 'freesurfer_long_results')
+
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
+
+os.makedirs(os.path.join(output_dir, 'fsnative', 'thickness'))
+os.makedirs(os.path.join(output_dir, 'fsnative', 'area'))
+os.makedirs(os.path.join(output_dir, 'fsnative', 'curv'))
+os.makedirs(os.path.join(output_dir, 'fsnative', 'sulc'))
+os.makedirs(os.path.join(output_dir, 'fsnative', 'volume'))
+
+os.makedirs(os.path.join(output_dir, 'fsaverage', 'thickness'))
+os.makedirs(os.path.join(output_dir, 'fsaverage', 'area'))
+os.makedirs(os.path.join(output_dir, 'fsaverage', 'curv'))
+os.makedirs(os.path.join(output_dir, 'fsaverage', 'sulc'))
+os.makedirs(os.path.join(output_dir, 'fsaverage', 'volume'))
+
+## part 1: fsnative
+# example
+# mris_convert -c ${SUBJECTS_DIR}/SUB1/surf/lh.thickness ${SUBJECTS_DIR}/SUB1/surf/lh.white /home/clancy/data/tms_project/project/AnatResults/fsnative/SUB1_space-fsnative.thickness.gii
+
+## part 2: fsaverage
+# example
+# mri_surf2surf --srcsubject SUB1 --trgsubject fsaverage --hemi lh --sval ${SUBJECTS_DIR}/SUB1/surf/lh.thickness --tval /home/clancy/data/tms_project/project/AnatResults/SUB1_space-fsaverage_hemi-L.thickness.gii 
+
+def get_freesurfer_resutls(sub):
+    # sub is the subject name instead of full dirpath. In addition, it should be in the freesurfer dir.
+    try:
+        sub_free_dir = os.path.join(freesurfer_dir, sub)
+        # lh
+        fsnative_thickness_l = f'mris_convert -c {sub_free_dir}/surf/lh.thickness {sub_free_dir}/surf/lh.white {output_dir}/fsnative/thickness/{sub}_space-fsnative_hemi-L.thickness.gii'
+        fsnative_area_l = f'mris_convert -c {sub_free_dir}/surf/lh.area {sub_free_dir}/surf/lh.white {output_dir}/fsnative/area/{sub}_space-fsnative_hemi-L.area.gii'
+        fsnative_curv_l = f'mris_convert -c {sub_free_dir}/surf/lh.curv {sub_free_dir}/surf/lh.white {output_dir}/fsnative/curv/{sub}_space-fsnative_hemi-L.curv.gii'
+        fsnative_sulc_l = f'mris_convert -c {sub_free_dir}/surf/lh.sulc {sub_free_dir}/surf/lh.white {output_dir}/fsnative/sulc/{sub}_space-fsnative_hemi-L.sulc.gii'
+        fsnative_volume_l = f'mris_convert -c {sub_free_dir}/surf/lh.volume {sub_free_dir}/surf/lh.white {output_dir}/fsnative/volume/{sub}_space-fsnative_hemi-L.volume.gii'
+        # rh
+        fsnative_thickness_r = f'mris_convert -c {sub_free_dir}/surf/rh.thickness {sub_free_dir}/surf/rh.white {output_dir}/fsnative/thickness/{sub}_space-fsnative_hemi-R.thickness.gii'
+        fsnative_area_r = f'mris_convert -c {sub_free_dir}/surf/rh.area {sub_free_dir}/surf/rh.white {output_dir}/fsnative/area/{sub}_space-fsnative_hemi-R.area.gii'
+        fsnative_curv_r = f'mris_convert -c {sub_free_dir}/surf/rh.curv {sub_free_dir}/surf/rh.white {output_dir}/fsnative/curv/{sub}_space-fsnative_hemi-R.curv.gii'
+        fsnative_sulc_r = f'mris_convert -c {sub_free_dir}/surf/rh.sulc {sub_free_dir}/surf/rh.white {output_dir}/fsnative/sulc/{sub}_space-fsnative_hemi-R.sulc.gii'
+        fsnative_volume_r = f'mris_convert -c {sub_free_dir}/surf/rh.volume {sub_free_dir}/surf/rh.white {output_dir}/fsnative/volume/{sub}_space-fsnative_hemi-R.volume.gii' 
+        # run
+        os.system(fsnative_thickness_l)
+        os.system(fsnative_area_l)
+        os.system(fsnative_curv_l)
+        os.system(fsnative_sulc_l)
+        os.system(fsnative_volume_l)
+        os.system(fsnative_thickness_r)
+        os.system(fsnative_area_r)
+        os.system(fsnative_curv_r)
+        os.system(fsnative_sulc_r)
+        os.system(fsnative_volume_r)
+        # lh
+        fsaverage_thickness_l = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi lh --sval {sub_free_dir}/surf/lh.thickness --tval {output_dir}/fsaverage/thickness/{sub}_space-fsaverage_hemi-L.thickness.gii'
+        fsaverage_area_l = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi lh --sval {sub_free_dir}/surf/lh.area --tval {output_dir}/fsaverage/area/{sub}_space-fsaverage_hemi-L.area.gii'
+        fsaverage_curve_l = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi lh --sval {sub_free_dir}/surf/lh.curve --tval {output_dir}/fsaverage/curve/{sub}_space-fsaverage_hemi-L.curve.gii'
+        fsaverage_sulc_l = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi lh --sval {sub_free_dir}/surf/lh.sulc --tval {output_dir}/fsaverage/sulc/{sub}_space-fsaverage_hemi-L.sulc.gii'
+        fsaverage_volume_l = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi lh --sval {sub_free_dir}/surf/lh.volume --tval {output_dir}/fsaverage/volume/{sub}_space-fsaverage_hemi-L.volume.gii'
+        # rh
+        fsaverage_thickness_r = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi rh --sval {sub_free_dir}/surf/rh.thickness --tval {output_dir}/fsaverage/thickness/{sub}_space-fsaverage_hemi-R.thickness.gii'
+        fsaverage_area_r = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi rh --sval {sub_free_dir}/surf/rh.area --tval {output_dir}/fsaverage/area/{sub}_space-fsaverage_hemi-R.area.gii'
+        fsaverage_curve_r = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi rh --sval {sub_free_dir}/surf/rh.curve --tval {output_dir}/fsaverage/curve/{sub}_space-fsaverage_hemi-R.curve.gii'
+        fsaverage_sulc_r = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi rh --sval {sub_free_dir}/surf/rh.sulc --tval {output_dir}/fsaverage/sulc/{sub}_space-fsaverage_hemi-R.sulc.gii'
+        fsaverage_volume_r = f'mri_surf2surf --srcsubject {sub} --trgsubject fsaverage --hemi rh --sval {sub_free_dir}/surf/rh.volume --tval {output_dir}/fsaverage/volume/{sub}_space-fsaverage_hemi-R.volume.gii'        
+        # run
+        os.system(fsaverage_thickness_l)
+        os.system(fsaverage_area_l)
+        os.system(fsaverage_curve_l)
+        os.system(fsaverage_sulc_l)
+        os.system(fsaverage_volume_l)
+        os.system(fsaverage_thickness_r)
+        os.system(fsaverage_area_r)
+        os.system(fsaverage_curve_r)
+        os.system(fsaverage_sulc_r)
+        os.system(fsaverage_volume_r)  
+        # finished
+        return sub, 'success'
+    except:
+        return sub, 'error'
+
+def run(f, this_iter):
+    with ProcessPoolExecutor(max_workers=30) as executor:
+        results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
+    return results
+
+if __name__ == "__main__":
+    org_subs = [os.path.basename(x) for x in glob(os.path.join(freesurfer_dir, '*long*'))] # 102 subs
+    org_subs.remove('SUB125.long.SUB125_robust_template') # exclusive error TR sub
+    org_subs.remove('SUB125_S2.long.SUB125_robust_template') # exclusive error TR sub
+    org_subs.sort(key=lambda x:int("".join(re.findall("\d+",x))))
+    # run
+    return_results = run(get_freesurfer_resutls, org_subs)
+    check_file = os.path.join(output_dir, 'results_check_list.txt')
+    with open(check_file, 'w') as cf:
+        check_file_head = 'SubjectID Status\n'
+        cf.write(check_file_head)
+        for return_result in return_results:
+            return_one, return_two = return_result
+            check_content = return_one + ' ' + return_two + '\n'
+            cf.write(check_content)
+        cf.close()
+    print('finished successfully !!!')
+# aruthor @kangwu.
