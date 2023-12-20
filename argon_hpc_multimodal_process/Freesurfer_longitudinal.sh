@@ -122,4 +122,6 @@ source ${FREESURFER_HOME}/FreeSurferEnv.sh
 ##########
 # freesurfer
 segment_subregions hippo-amygdala --long-base ${subject}
+segment_subregions thalamus --long-base ${subject}
+segment_subregions brainstem --long-base ${subject}
 echo "freesurfer successfully finished."
