@@ -37,11 +37,16 @@ ${singularityDir}/qsiprep_v0_19_1.sif \
 --resource-monitor \
 --stop-on-first-crash
 
-#Run qsiprep
+# run fmriprep with anat-only
+
+
+#Run qsiprecon
 qsiprep \
     derivatives/qsiprep derivatives participant \
 --recon_input derivatives/qsiprep \
 --recon_spec mrtrix_multishell_msmt_ACT-hsvs \
 --freesurfer-input derivatives/freesurfer \
 --fs-license-file /path/to/license.txt
-    
+
+
+
