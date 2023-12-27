@@ -54,3 +54,4 @@ Your job-array 208689.1-31:1 ("sub-batchArray_fmriprep") has been submitted
 > qacct -j 208689.1-31:1 # 208689.1-31:1 is the job id
 > qsub fmriprep_run.sh
 Your job-array 208844.1-31:1 ("sub-batchArray_fmriprep") has been submitted
+> qdel 208844.1-31:1
