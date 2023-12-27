@@ -19,3 +19,23 @@ for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
 		--resource-monitor \
 		--stop-on-first-crash\
 # second reconstruction
+
+# whole steps		
+for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
+		-v /media/clancy/WkPassport/ZhouYing/test:/work \
+		pennbbl/qsiprep:latest \
+		/work/BIDS /work/ participant --participant-label NAME \
+		--recon_spec mrtrix_singleshell_ss3t_ACT-hsvs \
+		--freesurfer-input /work/freesurfer \
+		--fs-license-file /work/license.txt \
+		--output-resolution 2 \
+		--nthreads 1 --omp-nthreads 1 \
+		-w /work/qsiprep_work \
+		--resource-monitor \
+		--stop-on-first-crash\
+
+whole steps generates:
+    > freesurfer
+    > qsiprep
+    > qsirecon
+    > qsiprep_work
