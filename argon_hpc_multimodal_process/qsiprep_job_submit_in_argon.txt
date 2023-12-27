@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#$ -N sub-qsiprep
+#$ -pe smp 10
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/logs
+#$ -t 1-83:1
+OMP_NUM_THREADS=10
+
+# count file number: ls BIDS | grep sub | wc -l
+# write sublist: ls BIDS | grep sub > sublist
+
+subject=`cat /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+##########
+
+#Run qsiprep
+singularity run --cleanenv \
+-B /old_Users/kangwu/work:/work \
+-B /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying:/output \
+${singularityDir}/qsiprep_v0_19_1.sif \
+/output/BIDS/ /output/qsiprep/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
+-w /work \
+--recon_spec /output/mrtrix_singleshell_ss3t_ACT-hsvs_10M.json \
+--anat-modality T1w \
+--ignore fieldmaps \
+--anatomical-template MNI152NLin2009cAsym \
+--output-resolution 2 \
+--fs-license-file /output/license.txt \
+--do-reconall \
+--resource-monitor \
+--stop-on-first-crash
