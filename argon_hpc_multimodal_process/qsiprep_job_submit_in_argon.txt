@@ -23,7 +23,7 @@ singularity run --cleanenv \
 -B /old_Users/kangwu/work:/work \
 -B /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying:/output \
 ${singularityDir}/qsiprep_v0_19_1.sif \
-/output/BIDS/ /output/qsiprep/ participant --participant-label ${subject} \
+/output/BIDS/ /output/ participant --participant-label ${subject} \
 --skip_bids_validation \
 --nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
 -w /work \
