@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#$ -N fmriprep-qsiprep
+#$ -pe smp 10
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/logs
+#$ -t 1-83:1
+OMP_NUM_THREADS=10
+
+subject=`cat /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+
+##########
+# run freesurfer with recon-all
+export FREESURFER_HOME=/Shared/pinc/sharedopt/apps/freesurfer/Linux/x86_64/7.4.0
+export SUBJECTS_DIR=/Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/BIDS
+export FS_LICENSE=/Shared/jianglab/3_Data_Working/tms_project_wk/project/license.txt
+source ${FREESURFER_HOME}/FreeSurferEnv.sh
+
+# freesurfer
+recon-all -i /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/BIDS/${subject}/anat/${subject}_T1w.nii -s ${sub_name} -sd /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/freesurfer/ -all
+echo "freesurfer successfully finished."
