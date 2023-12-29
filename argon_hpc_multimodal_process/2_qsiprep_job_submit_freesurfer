@@ -19,5 +19,5 @@ export FS_LICENSE=/Shared/jianglab/3_Data_Working/tms_project_wk/project/license
 source ${FREESURFER_HOME}/FreeSurferEnv.sh
 
 # freesurfer
-recon-all -i /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/BIDS/${subject}/anat/${subject}_T1w.nii -s ${sub_name} -sd /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/freesurfer/ -all
+recon-all -i /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/BIDS/${subject}/anat/${subject}_T1w.nii -s ${subject} -sd /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/freesurfer/ -all
 echo "freesurfer successfully finished."
