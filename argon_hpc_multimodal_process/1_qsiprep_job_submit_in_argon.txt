@@ -52,7 +52,7 @@ singularity run --cleanenv \
 -B /old_Users/kangwu/work:/work \
 -B /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying:/output \
 ${singularityDir}/qsiprep_v0_19_1.sif \
-/output/qsiprep /work participant \
+/output/qsiprep /work participant --participant-label ${subject} \
 --nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
 -w /work \
 --recon-only \
