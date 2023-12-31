@@ -27,5 +27,4 @@ ${singularityDir}/qsiprep_v0_19_1.sif \
 --recon_spec /output/mrtrix_singleshell_ss3t_ACT-hsvs_10M.json \
 --freesurfer-input /output/freesurfer \
 --fs-license-file /output/license.txt
---resource-monitor \
 --stop-on-first-crash
