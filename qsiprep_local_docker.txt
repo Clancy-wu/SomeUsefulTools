@@ -1,13 +1,7 @@
-# qsiprep process with docker
-## two thinigs should be reminder.
-## first, subjects shuold be 'sub-*' format.
-## second, qsiprep contains two steps. preprocess and reconstruction.
-
-# first preprocess
 for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
-		-v /media/clancy/WkPassport/ZhouYing/test:/work \
+		-v /home/clancy/data/zhouying:/work \
 		pennbbl/qsiprep:latest \
-		/work/BIDS/ /work/qsiprep/ participant --participant-label NAME \
+		/work/BIDS/ /work/ participant --participant-label NAME \
 		--skip_bids_validation \
 	        --nthreads 1 --omp-nthreads 1 \
 		-w /work/qsiprep_work \
@@ -18,24 +12,18 @@ for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
 		--fs-license-file /work/license.txt \
 		--resource-monitor \
 		--stop-on-first-crash\
-# second reconstruction
-
-# whole steps		
+		
+		
 for_each -nthreads 2 BIDS/sub-* : docker run --rm -it \
-		-v /media/clancy/WkPassport/ZhouYing/test:/work \
+		-v /home/clancy/data/zhouying:/work \
 		pennbbl/qsiprep:latest \
-		/work/BIDS /work/ participant --participant-label NAME \
-		--recon_spec mrtrix_singleshell_ss3t_ACT-hsvs \
-		--freesurfer-input /work/freesurfer \
-		--fs-license-file /work/license.txt \
-		--output-resolution 2 \
+		/work/qsiprep/ /work/ participant --participant-label NAME \
 		--nthreads 1 --omp-nthreads 1 \
 		-w /work/qsiprep_work \
+		--recon-only \
+		--recon_input /work/qsiprep \
+		--recon_spec /work/mrtrix_singleshell_ss3t_ACT-hsvs_10M.json \
+		--freesurfer-input /work/freesurfer \
+		--fs-license-file /work/license.txt
 		--resource-monitor \
-		--stop-on-first-crash\
-
-whole steps generates:
-    > freesurfer
-    > qsiprep
-    > qsirecon
-    > qsiprep_work
+		--stop-on-first-crash
