@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#$ -N recon-all
+#$ -pe smp 10
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/logs
+#$ -t 1-83:1
+OMP_NUM_THREADS=10
+
+subject=`cat /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+##########
+#Run qsiprecon
+singularity run --cleanenv \
+-B /old_Users/kangwu/work:/work \
+-B /Shared/jianglab/3_Data_Working/tms_project_wk/zhouying:/output \
+${singularityDir}/qsiprep_v0_19_1.sif \
+/output/qsiprep/ /output/ participant --participant-label ${subject} \
+--nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
+-w /work \
+--recon-only \
+--recon_input /output/qsiprep \
+--recon_spec /output/mrtrix_singleshell_ss3t_ACT-hsvs_10M.json \
+--freesurfer-input /output/freesurfer \
+--fs-license-file /output/license.txt
+--resource-monitor \
+--stop-on-first-crash
