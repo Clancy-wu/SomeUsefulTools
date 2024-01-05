@@ -1,0 +1,7 @@
+# this script is to fix the error or fail when performing qsirecon.
+# Lots times that fail generation can be dued to error of 5tt segmentation.
+# Fix steps include: 5ttgen, 
+/usr/local/mrtrix3/bin/5ttgen hsvs freesurfer/sub-sub109 sub-sub109_5tt.mif
+# it still error, with producing a 6X7x7X5 mif image, that's why it cannot be trackgen.
+# However, freesurfer recon-all script recon-all command log says every is run ok withou error.
+# I haven't any idea to deal with this. So I only change it to my own script.
