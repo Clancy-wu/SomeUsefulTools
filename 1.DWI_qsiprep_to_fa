@@ -1,0 +1,5 @@
+# qsiprep
+
+dwi2tensor -grad sub-sub001_space-T1w_desc-preproc_dwi.b -mask sub-sub001_space-T1w_desc-brain_mask.nii.gz sub-sub001_space-T1w_desc-preproc_dwi.nii.gz sub-sub001_space-T1w_desc-preproc_dwitensor.nii.gz
+
+tensor2metric -mask sub-sub001_space-T1w_desc-brain_mask.nii.gz -fa sub-sub001_space-T1w_desc-preproc_dwitensor_metrics_fa.nii.gz sub-sub001_space-T1w_desc-preproc_dwitensor.nii.gz
