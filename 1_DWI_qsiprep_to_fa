@@ -36,15 +36,14 @@ Img.to_filename(new_atlas)
 #################################################################################################
 fa_files = 'Results/FA'
 atlas = 'atlas'
-
 sublist = [x for x in os.listdir('qsiprep') if 'sub-sub' in x and 'html' not in x]
 def generate_indiv_atlas(sub):
     img_input = os.path.join(atlas, 'JHU_space-MNI152NLin2009cAsym_1mm.nii') # JHU mni
     img_ref = os.path.join('qsiprep', sub, 'dwi', sub+'_space-T1w_desc-preproc_dwi.nii.gz')
     img_out = os.path.join(atlas, 'individual_atlas', sub+'_space-T1w_JHU_atlas.nii.gz')
     img_trans = os.path.join('qsiprep', sub, 'anat', sub+'_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5')
-    Command_generate = f"antsApplyTransforms -e 3 -d 3 -i {img_input} -r {img_ref} -o {img_out} -n NearestNeighbor -u int -t {img_trans}"
-    os.system(Command_generate)
+    Command_g = f"antsApplyTransforms -e 3 -d 3 -i {img_input} -r {img_ref} -o {img_out} -n NearestNeighbor -u int -t {img_trans}"
+    os.system(Command_g)
 def run(f, this_iter):
     with ProcessPoolExecutor(max_workers=8) as executor:
         results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
@@ -52,4 +51,40 @@ def run(f, this_iter):
 if __name__ == '__main__':
     run(generate_indiv_atlas, sublist)
 
+#################################################################################################
+import numpy as np
+fa_files = os.listdir('Results/FA') # sub-sub153_space-T1w_desc-preproc_fa.nii.gz
+ind_atlas = 'atlas/individual_atlas'
+sublist = [x for x in os.listdir('qsiprep') if 'sub-sub' in x and 'html' not in x]
+from nilearn.maskers import NiftiMasker
+masker = NiftiMasker(mask_img=None, smoothing_fwhm=None, standardize=False, standardize_confounds=False, detrend=False, 
+                      high_variance_confounds=False, low_pass=None, high_pass=None, t_r=None, target_affine=None, 
+                      target_shape=None, mask_strategy='whole-brain-template', mask_args=None, dtype=None, 
+                      memory_level=0, n_jobs=1, verbose=0)
 
+def extract_fa_from_atlas(sub):
+    fa = os.path.join('Results/FA', sub+'_space-T1w_desc-preproc_fa.nii.gz')
+    ind_jhu = os.path.join(ind_atlas, sub+'_space-T1w_JHU_atlas.nii.gz')
+    df_fa = masker.fit_transform(fa) # (1, 218234)
+    df_jhu = masker.transform(ind_jhu) # (1, 218234)
+    df_jhu = df_jhu.astype(int)
+    Out = np.array([sub])
+    for i in np.unique(df_jhu):
+        Value = np.mean(df_fa[df_jhu==i])
+        Out = np.append(Out, round(Value, 4))
+    return(Out)
+
+def run(f, this_iter):
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
+    return results
+if __name__ == '__main__':
+    future_results = run(extract_fa_from_atlas, sublist)
+    import pandas as pd
+    colume_name = ['subject'] + ['ROI-'+str(x) for x in list(range(51))]
+    final_result = pd.DataFrame(colume_name)
+    for result in future_results:
+        result = pd.DataFrame(result)
+        final_result = pd.concat([final_result, result], axis=1)
+    final_result.to_csv('Results/JHU_FA_values.csv', index=None, header=None)
+## end. @kangwu
