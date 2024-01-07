@@ -43,7 +43,7 @@ def generate_indiv_atlas(sub):
     img_ref = os.path.join('qsiprep', sub, 'dwi', sub+'_space-T1w_desc-preproc_dwi.nii.gz')
     img_out = os.path.join(atlas, 'individual_atlas', sub+'_space-T1w_JHU_atlas.nii.gz')
     img_trans = os.path.join('qsiprep', sub, 'anat', sub+'_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5')
-    Command_generate = f"antsApplyTransforms -e 3 -d 3 -i {img_input} -r {img_ref} -o {img_out} -t {img_trans}"
+    Command_generate = f"antsApplyTransforms -e 3 -d 3 -i {img_input} -r {img_ref} -o {img_out} -n NearestNeighbor -u int -t {img_trans}"
     os.system(Command_generate)
 def run(f, this_iter):
     with ProcessPoolExecutor(max_workers=8) as executor:
