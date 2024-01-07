@@ -1,5 +1,55 @@
-# qsiprep
+#!/bin/python
+import os
+from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor
 
-dwi2tensor -grad sub-sub001_space-T1w_desc-preproc_dwi.b -mask sub-sub001_space-T1w_desc-brain_mask.nii.gz sub-sub001_space-T1w_desc-preproc_dwi.nii.gz sub-sub001_space-T1w_desc-preproc_dwitensor.nii.gz
+sublist = [x for x in os.listdir('qsiprep') if 'sub-sub' in x and 'html' not in x]
 
-tensor2metric -mask sub-sub001_space-T1w_desc-brain_mask.nii.gz -fa sub-sub001_space-T1w_desc-preproc_dwitensor_metrics_fa.nii.gz sub-sub001_space-T1w_desc-preproc_dwitensor.nii.gz
+def transform_to_fa(sub):
+    dwi_b = f"qsiprep/{sub}/dwi/{sub}_space-T1w_desc-preproc_dwi.b"
+    dwi_mask = f"qsiprep/{sub}/dwi/{sub}_space-T1w_desc-brain_mask.nii.gz"
+    dwi_prepare = f"qsiprep/{sub}/dwi/{sub}_space-T1w_desc-preproc_dwi.nii.gz"
+    dwi_tensor = f"Results/Tensor/{sub}_space-T1w_desc-preproc_dwitensor.nii.gz"
+    Command_tensor = f"dwi2tensor -grad {dwi_b} -mask {dwi_mask} {dwi_prepare} {dwi_tensor}"
+    os.system(Command_tensor)
+    dwi_fa = f"Results/FA/{sub}_space-T1w_desc-preproc_fa.nii.gz"
+    Command_fa = f"tensor2metric -mask {dwi_mask} -fa {dwi_fa} {dwi_tensor}"
+    os.system(Command_fa)
+
+def run(f, this_iter):
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
+    return results
+
+if __name__ == '__main__':
+    run(transform_to_fa, sublist)
+# end. @kangwu
+    
+
+from nilearn import image
+old_atlas = 'JHU-ICBM-labels-1mm.nii'
+target_file = 'sub-sub001_space-MNI152NLin2009cAsym_desc-preproc_T1w.nii.gz'
+new_atlas = 'JHU_space-MNI152NLin2009cAsym_1mm.nii'
+Img = image.resample_to_img(source_img=old_atlas, target_img=target_file, interpolation='continuous')
+Img.to_filename(new_atlas)
+
+#################################################################################################
+fa_files = 'Results/FA'
+atlas = 'atlas'
+
+sublist = [x for x in os.listdir('qsiprep') if 'sub-sub' in x and 'html' not in x]
+def generate_indiv_atlas(sub):
+    img_input = os.path.join(atlas, 'JHU_space-MNI152NLin2009cAsym_1mm.nii') # JHU mni
+    img_ref = os.path.join('qsiprep', sub, 'dwi', sub+'_space-T1w_desc-preproc_dwi.nii.gz')
+    img_out = os.path.join(atlas, 'individual_atlas', sub+'_space-T1w_JHU_atlas.nii.gz')
+    img_trans = os.path.join('qsiprep', sub, 'anat', sub+'_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5')
+    Command_generate = f"antsApplyTransforms -e 3 -d 3 -i {img_input} -r {img_ref} -o {img_out} -t {img_trans}"
+    os.system(Command_generate)
+def run(f, this_iter):
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
+    return results
+if __name__ == '__main__':
+    run(generate_indiv_atlas, sublist)
+
+
