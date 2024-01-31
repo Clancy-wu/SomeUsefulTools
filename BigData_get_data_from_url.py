@@ -36,4 +36,13 @@ if __name__ == '__main__':
             os.rename(i, new_name[0])
         else:
             pass
+            
+    # sort files
+    for i in os.listdir('.'):
+        sub_name = re.findall(r'(sub-\w*)_', i)
+        if len(sub_name) == 1:
+            sub_dir = sub_name[0]
+            if not os.path.exists(sub_dir):
+                os.mkdir(sub_dir)
+            os.rename(i, os.path.join(sub_dir, i))
 ## end. author@kangwu
