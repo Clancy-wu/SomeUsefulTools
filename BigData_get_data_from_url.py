@@ -46,3 +46,46 @@ if __name__ == '__main__':
                 os.mkdir(sub_dir)
             os.rename(i, os.path.join(sub_dir, i))
 ## end. author@kangwu
+#########################################
+## a slow version to avoid 429 error
+#########################################
+#!/bin/python39
+import pandas as pd
+import requests
+
+def get_data_from_url(url):
+    response = requests.get(url)
+    if 'content-disposition' in response.headers:
+        content_disposition = response.headers['content-disposition']
+        filename = content_disposition.split('filename=')[1]
+    else:
+        filename = url.split('/')[-1]
+    with open(filename, mode='wb') as file:
+        file.write(response.content)
+    print(f'Downloaded file {filename}')
+
+if __name__ == '__main__':
+    url_file = 'download_url.txt'
+    url_all = pd.read_csv(url_file, header=None)[0].values
+    for url in url_all:
+        get_data_from_url(url)
+
+    import os
+    import re
+    for i in os.listdir('.'):
+        new_name = re.findall(r'.*fileName=(.*)', i)
+        if len(new_name) == 1:
+            os.rename(i, new_name[0])
+        else:
+            pass
+    
+    # sort files
+    for i in os.listdir('.'):
+        sub_name = re.findall(r'(sub-\w*)_', i)
+        if len(sub_name) == 1:
+            sub_dir = sub_name[0]
+            if not os.path.exists(sub_dir):
+                os.mkdir(sub_dir)
+            os.rename(i, os.path.join(sub_dir, i))
+
+## end. author@kangwu
