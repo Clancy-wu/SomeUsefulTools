@@ -27,4 +27,13 @@ if __name__ == '__main__':
     this_iters = list(url_all)
     n_threads = 10
     run(get_data_from_url, this_iters, n_threads)
+    
+    import os
+    import re
+    for i in os.listdir('.'):
+        new_name = re.findall(r'.*fileName=(.*)', i)
+        if len(new_name) == 1:
+            os.rename(i, new_name[0])
+        else:
+            pass
 ## end. author@kangwu
