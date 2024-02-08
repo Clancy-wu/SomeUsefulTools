@@ -59,4 +59,29 @@ def coords(inputimage, i, j, k):
 # voxel space to the image space you choose (either MNI or T1w)
 nilearn.image.coord_transform(x, y, z, affine)
 
+#### 3. final transformation methods
+# coord2voxel
+def coord2voxel(my_coord, img_affine):
+    mni_x, mni_y, mni_z = my_coord[0], my_coord[1], my_coord[2]
+    coords = np.c_[
+        np.atleast_1d(mni_x).flat,
+        np.atleast_1d(mni_y).flat,
+        np.atleast_1d(mni_z).flat,
+        np.ones_like(np.atleast_1d(mni_z).flat),
+    ].T
+    project_affine = np.linalg.inv(img_affine)
+    voxel_x, voxel_y, voxel_z, _ = np.around(np.dot(project_affine, coords))
+    return voxel_x.item(), voxel_y.item(), voxel_z.item()
+	
+# voxel2coord
+def voxel2cood(my_coord, img_affine):
+    mni_x, mni_y, mni_z = my_coord[0], my_coord[1], my_coord[2]
+    coords = np.c_[
+        np.atleast_1d(mni_x).flat,
+        np.atleast_1d(mni_y).flat,
+        np.atleast_1d(mni_z).flat,
+        np.ones_like(np.atleast_1d(mni_z).flat),
+    ].T
+    voxel_x, voxel_y, voxel_z, _ = np.around(np.dot(img_affine, coords))
+    return voxel_x.item(), voxel_y.item(), voxel_z.item()
 
