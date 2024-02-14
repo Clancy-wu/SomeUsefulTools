@@ -37,6 +37,15 @@ ${singularityDir}/qsiprep_v0_19_1.sif \
 --resource-monitor \
 --stop-on-first-crash
 
+
+## 与 fMRI 不同的是，fMRI 可以与 T1w 图像进行配准，并使用 T1w 图像的空间归一化将其变形为模板，
+## 但 T1w 图像不包含足够的对比度，无法将白质结构准确地与模板对齐。因此，空间归一化通常在 
+## 模型拟合后完成。因此，我们--output-spaces在预处理中省略了参数：即默认情况下不会发生模板变形。
+## 所有输出都将注册到 T1w 图像（或 AC-PC 对齐的 b=0 模板，如果--dwi-only已指定），
+## 但将具有各向同性体素大小。此外，所有输出均根据 AC-PC 约定进行对齐：
+## 坐标从原始扫描仪坐标更改为新系统，其中 $0, 0, 0$ 是中线与前连合 (AC) 相交的位置。
+
+
 # run freesurfer with recon-all
 export FREESURFER_HOME=/Shared/pinc/sharedopt/apps/freesurfer/Linux/x86_64/7.4.0
 export SUBJECTS_DIR=/Shared/jianglab/3_Data_Working/tms_project_wk/project/data_input
