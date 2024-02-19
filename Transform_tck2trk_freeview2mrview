@@ -34,6 +34,10 @@ if __name__ == '__main__':
     "dwi": "dwi.nii.gz"
 }
 
+
+
+
+###############################################################################################
 ## main function
 import nibabel as nib
 from nibabel.streamlines import Field
@@ -56,3 +60,4 @@ def transform_tck2trk(tck_file, anatomy_file, trk_file):
 # main
 transform_tck2trk(tck_file, anatomy_file, trk_file)
 ## end. @kangwu
+###############################################################################################
