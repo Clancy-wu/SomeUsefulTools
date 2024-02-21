@@ -31,7 +31,7 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --nprocs 10 --omp-nthreads 10 --mem 32000 \
 -w work \
 --ignore fieldmaps \
---output-spaces MNI152NLin6Asym:res-2 MNI152NLin2009cAsym:res-2 \
+--output-spaces MNI152NLin6Asym:res-2 MNI152NLin2009cAsym:res-2 MNI152NLin2009cAsym:res-native \
 --bold2t1w-init register \
 --bold2t1w-dof 12 --force-bbr \
 --slice-time-ref 0.5 \
