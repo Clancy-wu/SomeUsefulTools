@@ -34,6 +34,7 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --output-spaces MNI152NLin6Asym:res-2 MNI152NLin2009cAsym:res-2 MNI152NLin2009cAsym:res-native \
 --bold2t1w-init register \
 --bold2t1w-dof 12 --force-bbr \
+--dummy-scans 5 \
 --slice-time-ref 0.5 \
 --fd-spike-threshold 0.5 \
 --dvars-spike-threshold 1.5 \
