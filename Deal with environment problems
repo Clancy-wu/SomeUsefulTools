@@ -1,0 +1,14 @@
+## the correspondent process in linux and python
+
+## export path
+  
+import os
+new_path = "/your/new/path"
+os.environ['PATH'] += os.pathsep + new_path
+
+## source path
+  
+import subprocess
+
+script_path = "/path/to/your/script.sh"
+subprocess.run(f"source {script_path}", shell=True)
