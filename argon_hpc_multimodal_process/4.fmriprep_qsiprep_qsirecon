@@ -70,7 +70,21 @@ ${singularityDir}/qsiprep_v0_19_1.sif \
 --stop-on-first-crash
 
 ##########################################################
-# 3. qsirecon
+# 3. copy anat
+##########################################################
+#!/bin/bash
+
+fmriprep=/Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/fmriprep
+qsiprep=/Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/qsiprep
+bids=/Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/BIDS
+
+for i in `ls ${bids} | grep sub-`;
+do
+  cp -r ${fmriprep}/${i}/anat ${qsiprep}/${i}/
+done
+
+##########################################################
+# 4. qsirecon
 ##########################################################
 #!/bin/bash
 
