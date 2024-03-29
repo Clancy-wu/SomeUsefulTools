@@ -1,0 +1,122 @@
+#!/bin/bash
+
+#$ -N qsirecon
+#$ -pe smp 20
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/logs
+#$ -t 1-26:1
+OMP_NUM_THREADS=10
+
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/rest_sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+##########
+#Run qsiprecon
+singularity run --cleanenv \
+-B /old_Users/kangwu/work:/work \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata:/output \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/fmriprep/sourcedata/freesurfer:/freesurfer \
+${singularityDir}/qsiprep_v0_19_1.sif \
+/output/BIDS/ /output/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
+-w /work \
+--recon_input /output/qsiprep \
+--recon_spec mrtrix_singleshell_ss3t_ACT-hsvs \
+--anat-modality T1w \
+--ignore fieldmaps \
+--anatomical-template MNI152NLin2009cAsym \
+--output-resolution 2 \
+--freesurfer-input /freesurfer \
+--fs-license-file /output/license.txt \
+--resource-monitor \
+--stop-on-first-crash
+
+##########################################################################################
+##########################################################################################
+#!/bin/bash
+
+#$ -N qsirecon
+#$ -pe smp 20
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/logs
+#$ -t 1-215:1
+OMP_NUM_THREADS=10
+
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+##########
+#Run qsiprecon
+singularity run --cleanenv \
+-B /old_Users/kangwu/work:/work \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata:/output \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/fmriprep/sourcedata/freesurfer:/freesurfer \
+${singularityDir}/qsiprep_v0_19_1.sif \
+/output/qsiprep/ /output/ participant --participant-label ${subject} \
+--nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
+-w /work \
+--recon-only \
+--recon_input /output/qsiprep \
+--recon_spec mrtrix_singleshell_ss3t_ACT-hsvs \
+--freesurfer-input /freesurfer \
+--fs-license-file /output/license.txt \
+--resource-monitor \
+--stop-on-first-crash
+
+##########################################################################################
+##########################################################################################
+#!/bin/bash
+
+#$ -N isyb_fmriprep
+#$ -pe smp 30
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/tms_project_wk/isyb_bigdata/logs
+#$ -t 1-215:1
+OMP_NUM_THREADS=30
+
+subject=`cat /Shared/jianglab/3_Data_Working/tms_project_wk/isyb_bigdata/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+export TEMPLATEFLOW_HOME=${singularityDir}/TemplateFlow
+export SINGULARITYENV_TEMPLATEFLOW_HOME=/templateflow
+
+##########
+
+#Run fmriprep
+singularity run --cleanenv \
+-B /Shared/jianglab/3_Data_Working/tms_project_wk/isyb_bigdata/work:/work \
+-B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
+${singularityDir}/fmriprep_v2314_kw.sif \
+/Shared/jianglab/3_Data_Working/tms_project_wk/isyb_bigdata/BIDS/ /Shared/jianglab/3_Data_Working/tms_project_wk/isyb_bigdata/fmriprep/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nprocs 10 --omp-nthreads 10 --mem 32000 \
+-w work \
+--ignore fieldmaps \
+--output-spaces MNI152NLin2009cAsym:res-2 MNI152NLin2009cAsym:res-native \
+--dummy-scans 5 \
+--fs-license-file ${singularityDir}/license.txt \
+--output-layout bids \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash
+
+
+
+
+
+
+
+
+
+
+
