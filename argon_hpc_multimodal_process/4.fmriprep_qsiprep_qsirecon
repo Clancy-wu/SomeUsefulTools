@@ -57,7 +57,6 @@ ${singularityDir}/qsiprep_v0_19_1.sif \
 /output/BIDS/ /output/ participant --participant-label ${subject} \
 --skip_bids_validation \
 --nthreads 10 --omp-nthreads 10 --mem_mb 32000 \
---dwi_only \
 -w /work \
 --recon_spec mrtrix_singleshell_ss3t_ACT-hsvs \
 --freesurfer-input /freesurfer \
