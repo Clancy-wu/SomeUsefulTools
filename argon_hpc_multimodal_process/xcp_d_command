@@ -1,0 +1,1 @@
+/usr/local/miniconda/bin/xcp_d /fmriprep /out participant --input-type fmriprep --smoothing 6 -p 36P --lower-bpf 0.008 --upper-bpf 0.08 -w work --cifti --resource-monitor
