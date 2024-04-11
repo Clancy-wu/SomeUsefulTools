@@ -1,1 +1,40 @@
 /usr/local/miniconda/bin/xcp_d /fmriprep /out participant --input-type fmriprep --smoothing 6 -p 36P --lower-bpf 0.008 --upper-bpf 0.08 -w work --cifti --resource-monitor
+# filter:
+## xcp_d: 0.01 - 0.08
+## dpabi: 0.01 - 0.10
+## ICA-AROMA will clean much signals tendency, so its better use 36P or others than ICA_AROMA
+## kangwu: Apr 11 2024
+
+
+#!/bin/bash
+
+#$ -N xcp_d
+#$ -pe smp 30
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/logs
+#$ -t 1-155:1
+OMP_NUM_THREADS=10
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+#Run qsiprep
+singularity run --cleanenv \
+-B /old_Users/kangwu/work:/work \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/:/output \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/fmriprep/sourcedata/freesurfer:/freesurfer \
+${singularityDir}/xcp_d-v0_7_1rc5_kw.simg \
+/output/fmriprep/ /output/xcp_d/ participant --participant-label ${subject} \
+--nthreads 10 --omp-nthreads 10 --mem-gb 20 \
+--input-type fmriprep \
+--dummy-scans 0 \
+-p 36P \
+--smoothing 6 \
+--lower-bpf 0.01 \
+--upper-bpf 0.08 \
+--atlases 4S456Parcels Glasser Gordon HCP Tian \
+-w work \
+--skip-dcan-qc \
+--fs-license-file /output/license.txt \
+--resource-monitor \
+--stop-on-first-crash
