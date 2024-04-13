@@ -34,6 +34,12 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --stop-on-first-crash
 
 ##########################################################
+# 1. frmiprep
+##########################################################
+Face wrong exit:
+  If the process exit for any reason, it should remove the work/fmriprep_wf and than to run again. If not do this,
+the previous work/log file will affect the new run and make it wrong again.
+##########################################################
 # 2. qsiprep
 ##########################################################
 #!/bin/bash
