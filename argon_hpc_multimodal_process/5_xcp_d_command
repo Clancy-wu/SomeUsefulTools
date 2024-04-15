@@ -1,4 +1,8 @@
 /usr/local/miniconda/bin/xcp_d /fmriprep /out participant --input-type fmriprep --smoothing 6 -p 36P --lower-bpf 0.008 --upper-bpf 0.08 -w work --cifti --resource-monitor
+
+# sublist:
+## ls BIDS/ | grep sub-sub | awk -F'-' '{print $2}' > sublist_xcp_nosub
+
 # filter:
 ## xcp_d: 0.01 - 0.08
 ## dpabi: 0.01 - 0.10
