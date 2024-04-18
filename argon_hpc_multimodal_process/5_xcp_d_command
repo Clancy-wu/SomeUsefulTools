@@ -62,7 +62,6 @@ singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_to
 singularity run --cleanenv \
 -B /old_Users/kangwu/work:/work \
 -B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/:/output \
--B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/fmriprep/sourcedata/freesurfer:/freesurfer \
 ${singularityDir}/xcp_d-v0_7_1rc5_kw.simg \
 /output/fmriprep/ /output/xcp_d/ participant --participant-label ${subject} \
 --nthreads 10 --omp-nthreads 10 --mem-gb 20 \
