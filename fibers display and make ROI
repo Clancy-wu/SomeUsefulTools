@@ -1,0 +1,39 @@
+# T1 to MNI
+# antsApplyTransforms --default-value 0 --float 0 --input-image-type 3 --input %s --interpolation Linear --output %s --reference-image %s/Masks/BrainMask_05_97x115x97.nii  --transform %s/qsiprep/%s/anat/%s_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
+
+antsApplyTransforms --input sub-0002_desc-preproc_T1w.nii.gz --reference-image sub-0002_space-MNI152NLin2009cAsym_desc-preproc_T1w.nii.gz --output sub-0002_MNI.nii.gz --interpolation Linear --transform sub-0002_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5 --default-value 0
+
+# BN atlas transform
+antsApplyTransforms --input BN_Atlas_246_1mm_FSL.nii.gz --reference-image tpl-MNI152NLin2009cAsym_res-01_desc-brain_mask.nii.gz --output BN_Atlas_246_1mm_freesurfer.nii.gz  --interpolation NearestNeighbor --output-data-type int --transform tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5 
+
+
+qsiprep:
+	1. Check the qsiprep anat results. If it is size of 193x229x193 or 91x118x91, it is the MNI space
+	2. Actually, the 'T1' image in qsirecon means 'MNI'
+	
+Note:
+	fmriprep + qsiprep
+	The 'T1' image in qsiprep/anat actually is the MNI152NLin2009cAsym space. So, enjoy the fiber tck file directly.
+
+# reduce the fiber tck file
+tckedit sub-0002_space-T1w_desc-preproc_desc-tracks_ifod2.tck sub-0002_space-T1w_5k.tck -number 5k
+
+# use sift to reduce tck file
+tcksift –act 5tt_coreg.mif –term_number 1000000 tracks_10mio.tck wmfod_norm.mif sift_1mio.tck
+
+# alway do not display whole fibers, but a part of it.
+tckedit sift_1mio.tck –number 200k smallerSIFT_200k.tck
+
+#########################################################
+## make roi display
+
+# ROI fibers, example is BN_Atlasmv BN_24	
+# first, generate the assignments.csv from atlas
+tck2connectome -symmetric -zero_diagonal -scale_invnodevol sub-0002_space-T1w_desc-preproc_desc-tracks_ifod2.tck BN_Atlas_246_1mm_freesurfer.nii.gz BN_246.csv -out_assignment assignments_BN.csv
+
+# get connections between two regions
+connectome2tck sub-0002_space-T1w_desc-preproc_desc-tracks_ifod2.tck assignments_BN.csv dlpfc_amg_LH.tck -nodes 15,213 -exclusive -files single
+With the option -exclusive, you specify that you only want to select tracks between the two regionsàThe last argument specifies the prefix that the resultantfile will have. We chose “moto”, since we are analyzing the motor cortex. The complete file name includes by default also the node indices that you are analyzing, so that in our case we will get a file called “moto8-188.tck"
+
+# get all fibers within an ROI
+connectome2tck –nodes 362,372 sift_1mio.tck assignments_hcpmmp1.csv –files per_node thalamus
