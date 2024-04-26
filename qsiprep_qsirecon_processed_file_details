@@ -28,3 +28,6 @@ the MNI152NLin2009cAsym included in qsiprep:
 	mni_1mm_t1w_lps.nii.gz
 
 then you can use any atlas (for example, the dir qsirecon_atlases), but you should register the atlas to (template: mni_1mm_t1w_lps.nii.gz) and carefully with LPS+ orientation and have the sform zeroed-out in the header.
+
+# transform the .tck file to MNI space .tck file
+tcktransform [ options ]  tracks transform output
