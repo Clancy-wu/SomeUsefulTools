@@ -6,7 +6,7 @@ Example sub-0002
      strandard RAS space MNI2009cAsy Template (gordon333MNI_lps_mni.nii.gz - from qsirecon_atlas)
         [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]        (kangwu: should be LPS)
 	193x229x193 voxel size
-0_2. standard LPS Template
+0_2. standard LPS Template (mni_1mm_t1w_lps.nii.gz - from qsirecon_atlas)
 	[-1, -0, -0, 96], [-0, -1, -0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
 0_3: 
     Right - Left (your left and right); 
@@ -16,6 +16,14 @@ Example sub-0002
 0_4: Affine: RL - AP - SI - [0, 0, 0, 1]
 	R(+)L(-) - A(+)P(-) - S(+)I(-) - [0, 0, 0, 1]
 
+0_5: qsirecon_atlas:  tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi..nii.gz (.mif)
+			affine: [-2, 0, 0, 79], [0, -2, 0, 80.5], [0, 0, 2, -79], [0, 0, 0, 1]
+			shape: [80, 99, 85]
+###############################################################################
+important note:
+1. when you have a new atlas, you should reshape with taking 'mni_1mm_t1w_lps.nii.gz' as the refernce.
+2. after you get the reshaped atlas in LPS space, then you can use this to extract structural connectome.
+###############################################################################
     
 1. qsiprep:
 	anat: preproc_T1w.nii.gz: 193x229x193, 
@@ -46,11 +54,72 @@ Example sub-0002
 ###############################################################################
 How to get desc-LPS_to_dwi.mif file ?
 Answer:
-1. source file: /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz
-   in_file: sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz
-2. 
-
+1. we have the atlas: aal116MNI_lps_mni.nii.gz (2x2x2, LPS)
+	this atlas could be created by resample_to_img.
+2. atlas_names: aal116 -> forward_transform: sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5, reference_image: sub-0002_space-T1w_desc-preproc_dwi.nii.gz, space: T1w
+	transform_command: 
+		antsApplyTransforms --default-value 0 --float 0 
+				    --input /atlas/qsirecon_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg.nii.gz 
+				    --interpolation MultiLabel 
+				    --output /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
+				    --reference-image /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz 
+				    --transform /output/qsiprep/sub-0002/anat/sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
+3. tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz -> tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
+	command: labelconvert /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
+			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_origlabels.txt 
+			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_mrtrixlabels.txt 
+			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
+	Labelconvert Usage:  path_in (the input image) lut_in (lookup table to the input image) lut_out (lookup table to the output image) image_out (the out image)
+4. get connectome:
+	command: tck2connectome -tck_weights_in /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv 
+				-nthreads 10 
+				-out_assignments assignments.txt 
+				-quiet 
+				-assignment_radial_search 2.000000 
+				-stat_edge sum 
+				-symmetric 
+				/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tractography/tracked.tck 
+				/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-Gordon333Ext_desc-LPS_dseg_to_dwi.mif 
+				connectome.csv'
+	tck2connectome Usage: tck2connectome [options] tracks_in nodes_in connectome_out
+				-tck_weights_in 
+				-assignment_radial_search: perform a radial search from each streamline endpoint to locate the nearest node.if no node is found within this radius, the streamline endpoint is not assigned to any node.
+5. End.
 ###############################################################################
+So, if you defined your own atlas. Steps of your own atlas should be followed to:
+(1) make sure your atlas is in strandard RAS space MNI2009cAsy Template with affine of [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
+	note: you can resample the atlas-res-01 to gordon333MNI_lps_mni.nii.gz (from qsirecon_atlas)
+	generate: tpl-MNI152NLin2009cAsym_res-01_atlas-(YOUR_ATLAS)_desc-LPS_dseg.nii.gz
+
+(2) resample your atlas to T1w space of dwi image and reorientate to LPS+
+	note: use antsApplyTransforms 
+			--default-value 0 
+			--float 0 
+			--input YOUR_ATLAS 
+			--interpolation MultiLabel 
+			--output YOUR_ATLAS_to_dwi 
+			--reference-image xxx_space-T1w_desc-preproc_dwi.nii.gz (80x99x85)
+			--transform xxx_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
+	generate: YOUR_ATLAS_to_dwi.nii.gz
+(3) convert label
+	labelconvert    res-01_atlas-ATLAS_desc-LPS_dseg_to_dwi.nii.gz 
+			res-01_atlas-ATLAS_desc-LPS_dseg_origlabels.txt 
+			res-01_atlas-ATLAS_desc-LPS_dseg_mrtrixlabels.txt 
+			res-01_atlas-ATLAS_desc-LPS_dseg_to_dwi.mif
+	Actually, the origlabels file contains 'index' and 'roi name', 
+	
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###############################################################################
 Renminber: The nifti images should be registered to the MNI152NLin2009cAsym included in qsiprep. It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header. Be sure to check for alignment and orientation in your outputs.
