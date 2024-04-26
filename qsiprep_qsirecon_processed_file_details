@@ -1,17 +1,26 @@
 Example sub-0002
 
-0. standard RAS space MNI2009cAsy Template
+0_1. standard RAS space MNI2009cAsy Template
 	[1, 0, 0, -96], [0, 1, 0, -132], [0, 0, 1, -78], [0, 0, 0, 1]
 	193x229x193 voxel size
+0_2. standard LPS Template
+	[-1, -0, -0, 96], [-0, -1, -0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
+0_3: 
+    Right - Left (your left and right); 
+    Anterior - Posterior (your front and back); 
+    Interior - Superior (your head up and head down)
+    The RAS coordinate is also called "the right-hand coordinate system", the Neurologist-preferred RAS axes, "Images are viewed as though looking from the top of the head downward.", "Right is right".
+0_4: Affine: RL - AP - SI - [0, 0, 0, 1]
+	R(+)L(-) - A(+)P(-) - S(+)I(-) - [0, 0, 0, 1]
 
-
+    
 1. qsiprep:
 	anat: preproc_T1w.nii.gz: 193x229x193, 
-		affine [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
+		affine [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]    (kangwu: should be LPS)
 	Transform:
 		antsApplyTransforms --input sub-0002_desc-preproc_T1w.nii.gz --interpolation Linear --output sub-0002_space-MNI152_desc-preproc_T1w.nii.gz --transform sub-0002_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5 -v 1 --reference-image tpl-MNI152NLin2009cAsym_res-01_desc-brain_mask.nii.gz 
 	Transformed image: 193x229x193, 
-		affine [1, 0, -0, -96], [0, 1, -0, -132], [0, 0, 1, -78], [0, 0, 0, 1]
+		affine [1, 0, -0, -96], [0, 1, -0, -132], [0, 0, 1, -78], [0, 0, 0, 1]    (kangwu: should be RAS)
 	check: sub-0002_space-MNI152_desc-preproc_T1w.nii.gz is in the MNI_a2009c space well.
 		sub-0002_desc-preproc_T1w.nii.gz is not in the MNI_a2009c space.
   dwi: 
