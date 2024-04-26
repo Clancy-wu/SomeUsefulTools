@@ -1,0 +1,30 @@
+Example sub-0002
+
+1. qsiprep:
+	anat: preproc_T1w.nii.gz: 193x229x193, 
+		affine [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
+	Transform:
+		antsApplyTransforms --input sub-0002_desc-preproc_T1w.nii.gz --interpolation Linear --output sub-0002_space-MNI152_desc-preproc_T1w.nii.gz --transform sub-0002_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5 -v 1 --reference-image tpl-MNI152NLin2009cAsym_res-01_desc-brain_mask.nii.gz 
+	Transformed image: 193x229x193, 
+		affine [1, 0, -0, -96], [0, 1, -0, -132], [0, 0, 1, -78], [0, 0, 0, 1]
+	check: sub-0002_space-MNI152_desc-preproc_T1w.nii.gz is in the MNI_a2009c space well.
+		sub-0002_desc-preproc_T1w.nii.gz is not in the MNI_a2009c space.
+  dwi: 
+
+2. qsirecon:
+	anat: sub-0002_desc-preproc_desc-hsvs_5tt.nii.gz 145x174x131x5, 1x1x1 voxel size
+	      sub-0002_desc-preproc_space-fsnative_desc-hsvs_5tt.mif 145x174x131x5 1x1x1 voxel size
+	      affine [1, 0, -0, -76], [-0, 1, -0, -57], [-0, 0, 1, 58]
+	dwi: sub-0002_space-T1w_desc-preproc_desc-csfFODmtnormed_ss3tcsd 80x99x85x1, 2x2x2.
+	
+	Get atlas connectome by qsirecon process:
+	'tck2connectome -tck_weights_in /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv -nthreads 10 -out_assignments assignments.txt -quiet -assignment_radial_search 2.000000 -stat_edge sum -symmetric /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tractography/tracked.tck /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-Gordon333Ext_desc-LPS_dseg_to_dwi.mif connectome.csv'
+	From this, we can see: track_ifod2/tractography/tracked.tck (input tck file), tpl-MNI152NLin2009cAsym_res-01_atlas-Gordon333Ext_desc-LPS_dseg_to_dwi.mif (output tck file)
+	How to get desc-LPS_to_dwi.mif file ?
+
+The nifti images should be registered to the MNI152NLin2009cAsym included in qsiprep. It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header. Be sure to check for alignment and orientation in your outputs.
+
+the MNI152NLin2009cAsym included in qsiprep:
+	mni_1mm_t1w_lps.nii.gz
+
+then you can use any atlas (for example, the dir qsirecon_atlases), but you should register the atlas to (template: mni_1mm_t1w_lps.nii.gz) and carefully with LPS+ orientation and have the sform zeroed-out in the header.
