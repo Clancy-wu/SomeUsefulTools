@@ -24,7 +24,6 @@ important note:
 1. when you have a new atlas, you should reshape with taking 'mni_1mm_t1w_lps.nii.gz' as the refernce.
 2. after you get the reshaped atlas in LPS space, then you can use this to extract structural connectome.
 ###############################################################################
-    
 1. qsiprep:
 	anat: preproc_T1w.nii.gz: 193x229x193, 
 		affine [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]    (kangwu: should be LPS)
@@ -36,7 +35,6 @@ important note:
 		sub-0002_desc-preproc_T1w.nii.gz is not in the MNI_a2009c space.
   dwi: sub-0002_space-T1w_desc-preproc_dwi.nii.gz: 80x99x85x69
 		affine [-2, 0, 0, 79], [0, -2, 0, 80.5], [0, 0, 2, -79], [0, 0, 0, 1]      (kangwu: should be LPS)
-		
 
 2. qsirecon:
 	anat: sub-0002_desc-preproc_desc-hsvs_5tt.nii.gz 145x174x131x5, 1x1x1 voxel size
@@ -51,12 +49,21 @@ important note:
 	'tck2connectome -tck_weights_in /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv -nthreads 10 -out_assignments assignments.txt -quiet -assignment_radial_search 2.000000 -stat_edge sum -symmetric /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tractography/tracked.tck /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-Gordon333Ext_desc-LPS_dseg_to_dwi.mif connectome.csv'
 	From this, we can see: track_ifod2/tractography/tracked.tck (input tck file), tpl-MNI152NLin2009cAsym_res-01_atlas-Gordon333Ext_desc-LPS_dseg_to_dwi.mif (output tck file)
 	How to get desc-LPS_to_dwi.mif file ?
+
+Use of SIFT for quantifying pathways of interest (a self-defined pathway) ??
+	In some circumstances, researchers may be interested in the connection density of one or two specific pathways of interest, rather than that of the whole brain. 
+SIFT is still applicable in this scenario; however the SIFT algorithm itself is only applicable to whole-brain fibre-tracking data. Therefore, the workflow in this 
+scenario should be: * Generate a whole-brain tractogram; * Apply SIFT; * Extract the pathway(s) of interest using tckedit. * Get the streamline count using tckinfo.
+	In summary: a whole-brain tractogram -> apply SIFT -> extract the pathway of interest using tckedit -> get streamline count using tckinfo.
+The SIFT algorithm is not directly applicable to targeted tracking data. The underlying biophysical model in SIFT assumes that the estimated density of each fibre population in every voxel of the image should be proportionally reconstructed by streamlines;
 ###############################################################################
 How to get desc-LPS_to_dwi.mif file ?
 Answer:
 1. we have the atlas: aal116MNI_lps_mni.nii.gz (2x2x2, LPS)
-	this atlas could be created by resample_to_img.
-2. atlas_names: aal116 -> forward_transform: sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5, reference_image: sub-0002_space-T1w_desc-preproc_dwi.nii.gz, space: T1w
+	this atlas could be created by resample_to_img, be careful with the MNI space, all those should be 193x229x193 MNI space.
+-> output for next: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg
+
+2. atlas_names: aal116MNI_lps_mni -> forward_transform: sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5, reference_image: sub-0002_space-T1w_desc-preproc_dwi.nii.gz, space: T1w
 	transform_command: 
 		antsApplyTransforms --default-value 0 --float 0 
 				    --input /atlas/qsirecon_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg.nii.gz 
@@ -64,12 +71,19 @@ Answer:
 				    --output /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
 				    --reference-image /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz 
 				    --transform /output/qsiprep/sub-0002/anat/sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
+-> output for next: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
+
 3. tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz -> tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
 	command: labelconvert /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
 			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_origlabels.txt 
 			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_mrtrixlabels.txt 
 			      /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_anat_wf/get_atlases/tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
 	Labelconvert Usage:  path_in (the input image) lut_in (lookup table to the input image) lut_out (lookup table to the output image) image_out (the out image)
+	mrtrixlabels format: 
+-> output for next: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif & tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_mrtrixlabels.txt 
+
+4. make sift2 to optimize 
+	
 4. get connectome:
 	command: tck2connectome -tck_weights_in /work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3_hsvst/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv 
 				-nthreads 10 
@@ -84,7 +98,9 @@ Answer:
 	tck2connectome Usage: tck2connectome [options] tracks_in nodes_in connectome_out
 				-tck_weights_in 
 				-assignment_radial_search: perform a radial search from each streamline endpoint to locate the nearest node.if no node is found within this radius, the streamline endpoint is not assigned to any node.
-5. End.
+
+5. Track Density Imaging (TDI)
+TDI can be useful for visualising the results of tractography, expecially in voxel space.
 ###############################################################################
 So, if you defined your own atlas. Steps of your own atlas should be followed to:
 (1) make sure your atlas is in strandard RAS space MNI2009cAsy Template with affine of [-1, 0, 0, 96], [0, -1, 0, 96], [0, 0, 1, -78], [0, 0, 0, 1]
