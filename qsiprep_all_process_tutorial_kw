@@ -1,0 +1,201 @@
+1. Basic information
+  DWI geometric distortion correction: dwifslpreproc
+  DWI brain mask estimation: dwi2mask
+  Response function estimation: dwi2response tournier
+  Fibre orientation distribution estimation: dwi2fod csd (CSD: constrained spherical deconvolution)
+  whole-brain streamlines tractography: tckgen
+  Track Density Imaging (TDI): tckmap
+
+2. Coordinate system
+  All MRtrix3 applications will consistently use the same coordinate system, which is identical to the NIfTI standard.
+  However, this frame of reference differs from the DICOM standard. Because the standard is RAS orientation and this frame
+  is LPS orientation (typically the x & y axis are reversed).
+  In mrtix3: x axis -> Left to Right; y aixs -> Posterior to Anterior; z axis -> Inferior to Superior
+
+3. File types
+  mih/mif, mif.gz, .dcm, .ni, .nii.gz, .mgh/mgz, .tck, .tsf
+  tsf: Track Scalar File
+
+4. Connectome
+  Generate connectome: The default assignment mechanism is a radial search outwards from the streamline termination point, out to *a maximum radius of 4mm*; 
+  and *the streamline endpoint is only assigned to the first non-zero node index*. command: tck2connectome
+
+  Extracting pathways of interest from a connectome: command: connectome2tck
+
+  Connectome notes: the index of the connectome should be a unique integer value between 1 and N, where N is the number of nodes in the connectome.
+  So, you should use labelconvert to generate index file if you use freesurfer. 
+  Steps of labelconvert include: (1) read uniqeu values of each voxel in integer format. (2) convert the integer value into a string based on the input
+  lookup table file. (3) sort the integer index to be continue numbers, then output the index and string to a lookup table and the new image with sorted index.
+  A. *Obviously if your parcellation image already has node indices that increase monotonically from 1, and you’re happy enough with the numerical order of the nodes, you don’t actually need to use the labelconvert step at all.*
+  B. *If you wish to omit nodes from your connectome (e.g. the cerebellar hemispheres), you may be better off making these nodes the largest indices in your connectome, but then cropping them from the connectome matrices retrospectively, 
+  rather than omitting them from the parcellation image entirely*
+
+5. tck commands
+  **1. tck2connectome: generate connectome based on atlas:
+      Default usage
+          tck2connectome tracks.tck nodes.mif connectome.csv -tck_weights_in weights.csv -out_assignments assignments.txt
+      Generate a matrix consisting of the mean streamline length between each node pair
+          tck2connectome tracks.tck nodes.mif distances.csv -scale_length -stat_edge mean
+      Generate a connectome matrix where the value of connectivity is the "mean FA"
+          tcksample tracks.tck FA.mif mean_FA_per_streamline.csv -stat_tck mean; tck2connectome tracks.tck nodes.mif mean_FA_connectome.csv -scale_file mean_FA_per_streamline.csv -stat_edge mean
+      Generate the connectivity fingerprint for streamlines seeded from a particular region
+          tck2connectome fixed_seed_tracks.tck nodes.mif fingerprint.csv -vector
+              This usage assumes that the streamlines being provided to the command have all been seeded from the (effectively) same location, and as such, only
+              the endpoint of each streamline (not their starting point) is assigned based on the provided parcellation image. Accordingly, the output file
+              contains only a vector of connectivity values rather than a matrix, since each streamline is assigned to only one node rather than two.
+  **2. tck2fixel: Compute a fixel TDI (track density imaging) map from a tractogram tck file
+  3. tckconvert: tck with scanner2voxel | scanner2image | voxel2scanner | image2scanner, coordinate system transform
+  *4. tckdfc: Track-Weighted Dynamic Functional Connectivity (TW-dFC). This command generates a Track-Weighted Image (TWI), 
+  where the contribution from each streamline to the image is the Pearson correlation between the fMRI time series at the streamline endpoints.
+  5. tckedit: (1) Concatenate data from multiple track files into one (2) Extract a reduced number of streamlines (3) Extract streamlines based on selection criteria (4) Select only those streamline vertices within a mask.
+  6. tckgen: whole brain tractography. tckglobal: multi-shell whole brain tractography.
+  7. tckinfo: count number of tracks.
+  **8. tckmap: producing a high-resolution image with tck file.
+    Options for the streamline-to-voxel mapping mechanism:
+      -upsample factor
+      -precise: use a more precise streamline mapping strategy, that accurately quantifies the length through each voxel (these lengths are then taken into account during TWI calculation)
+      -ends_only: only map the streamline endpoints to the image
+      -tck_weights_in path: specify a text scalar file containing the streamline weights
+  9. tckresample: Resample each streamline in a track file to a new set of vertices (reduce tck file and generate random tck fiel)
+  10. tcksift/tcksift2
+  11. tckstats: Calculate statistics on streamlines lengths & output a histogram of streamline lengths
+  12. tcktransform:
+Note: TWFC and TDI should get more attention.
+
+6. QSIprep with Mrtrix3
+  1. the derivations of QSIprep
+    sub-sub001_space-T1w_desc-preproc_desc-csfFODmtnormed_ss3tcsd.nii.gz (csf)
+    sub-sub001_space-T1w_desc-preproc_desc-gmFODmtnormed_ss3tcsd.nii.gz (gm)
+    sub-sub001_space-T1w_desc-preproc_desc-wmFODmtnormed_ss3tcsd.nii.gz (wm)
+    sub-sub001_space-T1w_desc-preproc_desc-mtinliermask_ss3tcsd.nii.gz (mask)
+    sub-sub001_space-T1w_desc-preproc_desc-mtnorm_ss3tcsd.nii.gz (norm)
+    sub-sub001_space-T1w_desc-preproc_desc-siftweights_ifod2.csv (sift weights)
+    sub-sub001_space-T1w_desc-preproc_desc-tracks_ifod2.tck (tck file)
+
+    0.0 processes of ss3t_csd
+      0.1 creat mif: qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.b (b_file)
+                     qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.bval (bval_file)
+                     qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.bvec (bvec_file)
+                     qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz (dwi_file)
+                     mrconvert -grad sub-0002_space-T1w_desc-preproc_dwi.b 
+                               sub-0002_space-T1w_desc-preproc_dwi.nii.gz 
+                               sub-0002_space-T1w_desc-preproc_dwi.mif
+                     output: sub-0002_space-T1w_desc-preproc_dwi.mif
+      0.2 estimate_response
+                dwi2response dhollander -mask sub-0002_desc-brain_mask_resample.nii.gz 
+                                        -nthreads 10 
+                                        sub-0002_space-T1w_desc-preproc_dwi.mif 
+                                        sub-0002_space-T1w_desc-preproc_dwi_wm.txt 
+                                        sub-0002_space-T1w_desc-preproc_dwi_gm.txt 
+                                        sub-0002_space-T1w_desc-preproc_dwi_csf.txt
+      0.3 estimate_fod
+                /opt/3Tissue/bin/ss3t_csd_beta1 -mask sub-0002_desc-brain_mask_resample.nii.gz 
+                                                -nthreads 10 
+                                                sub-0002_space-T1w_desc-preproc_dwi.mif 
+                                                sub-0002_space-T1w_desc-preproc_dwi_wm.txt 
+                                                sub-0002_space-T1w_desc-preproc_dwi_wm.mif 
+                                                sub-0002_space-T1w_desc-preproc_dwi_gm.txt 
+                                                sub-0002_space-T1w_desc-preproc_dwi_gm.mif
+                                                sub-0002_space-T1w_desc-preproc_dwi_csf.txt 
+                                                sub-0002_space-T1w_desc-preproc_dwi_csf.mif
+      0.4 intensity_norm
+                mtnormalise sub-0002_space-T1w_desc-preproc_dwi_wm.mif 
+                            sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif 
+                            sub-0002_space-T1w_desc-preproc_dwi_gm.mif 
+                            sub-0002_space-T1w_desc-preproc_dwi_gm_mtnorm.mif 
+                            sub-0002_space-T1w_desc-preproc_dwi_csf.mif 
+                            sub-0002_space-T1w_desc-preproc_dwi_csf_mtnorm.mif 
+                            -check_mask inliers.nii.gz 
+                            -mask sub-0002_desc-brain_mask_resample.nii.gz 
+                            -check_norm norm.nii.gz 
+                            -nthreads 10
+      0.5 ds_inlier_mask
+                source file: /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz
+                in_file: ss3t_csd/intensity_norm/inliers.nii.gz
+                desc_file (out_file): mtinliermask.mif.gz
+      0.6 ds_mt_norm
+                source file: /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz
+                in_file: ss3t_csd/intensity_norm/norm.nii.gz
+                desc_file (out_file): mtnorm.mif.gz
+      0.7 ds_cfs (odf+txt), ds_gm (odf+txt), ds_wm (odf+txt), take ds_wm as the example:
+                source file: /output/qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz
+                in_file: ss3t_csd/intensity_norm/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif
+                desc_file (out_file): wmFODmtnormed.mif.gz
+
+    1.1 tractography
+    tckgen -algorithm iFOD2 
+           -backtrack 
+           -crop_at_gmwmi 
+           -maxlength 250.000000 
+           -minlength 30.000000 
+           -samples 4
+           -nthreads 10 
+           -output_seeds out_seeds.nii.gz 
+           -power 0.330000 
+           -quiet 
+           -seed_dynamic sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif 
+           -select 10000000 
+           sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif 
+           tracked.tck
+    1.2 sift2
+    tcksift2 -nthreads 10 
+             -out_mu sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_mu.txt 
+             tracked.tck 
+             sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif 
+             sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv
+             
+    2.2 matrix_connectome (example AAL116)
+    atlas required files:
+      dwi_resolution_file: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz
+      dwi_resolution_mif: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
+      orig_file: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg.nii.gz
+      mrtrix_lut: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_origlabels.txt
+      node_indices
+      node_names
+
+    Generate four types connectome: radius2_count, radius2_meanlength, sift_invmodevol_radius2_count, sift_radius2_count
+      (1) radius2_count: 
+              tck2connectome  -nthreads 10 
+                              -out_assignments assignments.txt 
+                              -quiet 
+                              -assignment_radial_search 2.000000 
+                              -stat_edge sum 
+                              -symmetric 
+                              tracked.tck 
+                              tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif 
+                              connectome.csv
+      (2) radius2_meanlength:
+              tck2connectome  -scale_length 
+                              -nthreads 10 
+                              -out_assignments assignments.txt 
+                              -quiet 
+                              -assignment_radial_search 2.000000 
+                              -stat_edge mean 
+                              -symmetric 
+                              tracked.tck 
+                              tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif 
+                              connectome.csv
+      (3) sift_invmodevol_radius2_count:
+              tck2connectome -tck_weights_in /track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv 
+                             -nthreads 10 
+                             -out_assignments assignments.txt 
+                             -quiet 
+                             -scale_invnodevol 
+                             -assignment_radial_search 2.000000 
+                             -stat_edge sum 
+                             -symmetric 
+                             tracked.tck 
+                             tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif 
+                             connectome.csv
+      (4) sift_radius2_count:
+              tck2connectome -tck_weights_in /track_ifod2/tck_sift2/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv 
+                             -nthreads 10 
+                             -out_assignments assignments.txt 
+                             -quiet 
+                             -assignment_radial_search 2.000000 
+                             -stat_edge sum 
+                             -symmetric 
+                             tracked.tck 
+                             tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif connectome.csv
+
+  # end. Author@clancy_wu, kangwu@uiowa.edu
