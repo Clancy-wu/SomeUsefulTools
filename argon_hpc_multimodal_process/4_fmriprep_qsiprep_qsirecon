@@ -25,7 +25,7 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --nprocs 10 --omp-nthreads 10 --mem 32000 \
 -w work \
 --ignore fieldmaps \
---output-spaces MNI152NLin2009cAsym:res-2 MNI152NLin2009cAsym:res-native \
+--output-spaces MNI152NLin2009cAsym:res-2 MNI152NLin2009cAsym:res-native fsaverage5 \
 --dummy-scans 5 \
 --fs-license-file ${singularityDir}/license.txt \
 --output-layout bids \
