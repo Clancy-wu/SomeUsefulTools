@@ -1,0 +1,30 @@
+# fmriprep, --output-spaces fsaverage5 MNI152NLin2009cAsym:res-%s fsnative T1w
+#!/bin/bash
+#$ -N isyb_fmriprep
+#$ -pe smp 3
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/logs
+#$ -t 1-3:1
+OMP_NUM_THREADS=10
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+export TEMPLATEFLOW_HOME=${singularityDir}/TemplateFlow
+export SINGULARITYENV_TEMPLATEFLOW_HOME=/templateflow
+singularity run --cleanenv \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/:/output \
+-B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
+${singularityDir}/fmriprep_v2314_kw.sif \
+/output/BIDS/ /output/fmriprep/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nprocs 10 --omp-nthreads 10 --mem 32000 \
+-w /output/work \
+--ignore fieldmaps \
+--output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 fsnative T1w \
+--dummy-scans 5 \
+--fs-license-file ${singularityDir}/license.txt \
+--fs-subjects-dir /output/freesurfer \
+--output-layout bids \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash
