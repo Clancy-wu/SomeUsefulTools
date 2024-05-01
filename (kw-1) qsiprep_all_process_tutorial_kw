@@ -26,9 +26,10 @@
   So, you should use labelconvert to generate index file if you use freesurfer. 
   Steps of labelconvert include: (1) read uniqeu values of each voxel in integer format. (2) convert the integer value into a string based on the input
   lookup table file. (3) sort the integer index to be continue numbers, then output the index and string to a lookup table and the new image with sorted index.
-  A. *Obviously if your parcellation image already has node indices that increase monotonically from 1, and you’re happy enough with the numerical order of the nodes, you don’t actually need to use the labelconvert step at all.*
-  B. *If you wish to omit nodes from your connectome (e.g. the cerebellar hemispheres), you may be better off making these nodes the largest indices in your connectome, but then cropping them from the connectome matrices retrospectively, 
-  rather than omitting them from the parcellation image entirely*
+  A. *Obviously if your parcellation image already has node indices that increase monotonically from 1, and you’re happy enough with the numerical order of the nodes, 
+      you don’t actually need to use the labelconvert step at all.*
+  B. *If you wish to omit nodes from your connectome (e.g. the cerebellar hemispheres), you may be better off making these nodes the largest indices in your connectome, 
+      but then cropping them from the connectome matrices retrospectively, rather than omitting them from the parcellation image entirely*
 
 5. tck commands
   **1. tck2connectome: generate connectome based on atlas:
@@ -47,7 +48,11 @@
   3. tckconvert: tck with scanner2voxel | scanner2image | voxel2scanner | image2scanner, coordinate system transform
   *4. tckdfc: Track-Weighted Dynamic Functional Connectivity (TW-dFC). This command generates a Track-Weighted Image (TWI), 
   where the contribution from each streamline to the image is the Pearson correlation between the fMRI time series at the streamline endpoints.
-  5. tckedit: (1) Concatenate data from multiple track files into one (2) Extract a reduced number of streamlines (3) Extract streamlines based on selection criteria (4) Select only those streamline vertices within a mask.
+  5. tckedit: Perform various editing operations on track files. 
+                (1) Concatenate data from multiple track files into one 
+                (2) Extract a reduced number of streamlines 
+                (3) Extract streamlines based on selection criteria 
+                (4) Select only those streamline vertices within a mask.
   6. tckgen: whole brain tractography. tckglobal: multi-shell whole brain tractography.
   7. tckinfo: count number of tracks.
   **8. tckmap: producing a high-resolution image with tck file.
@@ -150,8 +155,8 @@ Note: TWFC and TDI should get more attention.
       dwi_resolution_mif: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif
       orig_file: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg.nii.gz
       mrtrix_lut: tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_origlabels.txt
-      node_indices
-      node_names
+                  node_indices
+                  node_names
 
     Generate four types connectome: radius2_count, radius2_meanlength, sift_invmodevol_radius2_count, sift_radius2_count
       (1) radius2_count: 
@@ -197,5 +202,82 @@ Note: TWFC and TDI should get more attention.
                              -symmetric 
                              tracked.tck 
                              tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.mif connectome.csv
+=============================================================================================================================
+##  processes for other use, created by clancy_wu,kangwu,kangwu@uiowa.edu
+=============================================================================================================================
+    3.3 matrix_connectome by self-defined atlas
+        For example, if you have an atlas with shape of 193x229x193 and is in MNI space, you should:
+        (1) reshape to qsirecon_atlas/mni_1mm_t1w_lps.nii.gz, make it to be res-01 and LPS orientation and sform zeroed-out in the header information.
+        (2) use antsApplyTransforms to dwi space (80x99x85, 2x2x2)
+                		antsApplyTransforms --default-value 0 --float 0 
+                            				    --input tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg.nii.gz (self defined res-01 LPS atlas)
+                            				    --interpolation MultiLabel 
+                            				    --output tpl-MNI152NLin2009cAsym_res-01_atlas-AAL116_desc-LPS_dseg_to_dwi.nii.gz 
+                            				    --reference-image /qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz 
+                            				    --transform /qsiprep/sub-0002/anat/sub-0002_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
+        (3) make the atlas be with unique integer values between 1 and N, where N is the number of nodes in the connectome
+                    you can use 'labelconvert' or skip this step if your atlas meets the standard.
+        (4) use tck2connectome like section 2.2
+
+    4.4 Fibers transform to MNI space and display in self-defined ROI area
+         (1) get assignments.csv from atlas
+              tck2connectome -symmetric -zero_diagonal -scale_invnodevol xxx.tck Atlas.nii.gz BN_246.csv -out_assignment assignments.csv
+         (2) extract fibers between regions
+              connectome2tck xxx.tck assignments.csv dlpfc_amg_LH.tck -nodes 15,213 -exclusive -files single
+              connectome2tck tracks.tck assignments.txt exemplars.tck -files single -exemplars nodes.mif  *display connectome edges using the streamlines or streamtubes geometries
+                                -exemplars image, generate a mean connection exemplar per edge, rather than keeping all streamlines.
+              if you want to extract fibers within a region:
+                  connectome2tck –nodes 362 sift_1mio.tck assignments_hcpmmp1.csv –files per_node thalamus
+         Some notes: its better use sift2 and radius2 parameters to generate the connectome
+         (3) mapping the track of pair nodes to Volume Space
+                tckmap -template xxxx_space-T1w.nii.gz dlpfc_amg_LH.tck dlpfc_amg_LH_map.nii.gz
+
+    5.5 DWI tensor metrics: FA, ADC, AD, RD
+      (1) preproc dwi to tensor
+          dwi2tensor -grad /qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.b 
+                     -mask qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-brain_mask.nii.gz 
+                     /qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz 
+                     sub-0002_space-T1w_desc-preproc_dwitensor.nii.gz
+      (2) tensor to tensor metrics
+          tensor2metric -mask /qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-brain_mask.nii.gz 
+          -adc /ADC/sub-0002_space-T1w_desc-preproc_dwitensor_metrics.nii.gz 
+          -fa /FA/sub-0002_space-T1w_desc-preproc_dwitensor_metrics.nii.gz 
+          -ad /AD/sub-0002_space-T1w_desc-preproc_dwitensor_metrics.nii.gz 
+          -rd /RD/sub-0002_space-T1w_desc-preproc_dwitensor_metrics.nii.gz 
+           /Tensor/sub-0002_space-T1w_desc-preproc_dwitensor.nii.gz
+
+    6.6 matrix_connectome weighted by FA
+          tcksample /qsirecon/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_desc-tracks_ifod2.tck 
+                    /FA/sub-0002_space-T1w_desc-preproc_dwitensor_metrics.nii.gz 
+                    /MeanFAPerStreamline_sub-0002.csv 
+                    -stat_tck mean 
+                    -quiet
+          tck2connectome xxx -scale_file WeightedImagePerStreamline_sub-0002.csv
+                    --scale_file: scale each contribution to the connectome edge according to the values in a vector file
+
+    7.7 tracks and TDI for each ROI by a atlas
+        (1) make tracks for each ROI
+        tckedit /qsirecon/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_desc-tracks_ifod2.tck
+                ROI_1_sub-0002.tck
+                -tck_weights_in /qsirecon/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_desc-siftweights_ifod2.csv
+                -tck_weights_out ROI_1_sub-0002.csv
+                -include Mask_desc-LPS_dseg_to_dwi_ROI_1.nii.gz
+        Usage: tckedit: Extract streamlines based on selection criteria. command: tckedit in.tck out.tck -include ROI1.mif -include ROI2.mif -minlength 25
+        (2) mask track density imaging for each ROI
+        tckmap ROI_1_sub-0002.tck 
+               ROI_1_sub-0002_TDIMap.nii.gz 
+               -tck_weights_in ROI_1_sub-0002.csv 
+               -template /qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.nii.gz
+
+    8.8 TWFC: Track-Weighted Functional Connectivity
+          Three options for TWFC.
+    8.8.1 TWFC, Track-weighted Functional Connectivity (rely on a prior functional network)
+          xxx
+
+    8.8.2 TWsFC: Track-weighted statistic Functional Connectivity (donot need atlas and will take all streamlines of the tractogram into analysis)
+          tckdfc
+
+    8.8.3 TWdFC: Track-weighted dynamic Functional Connectivity (donot need atlas and will take all streamlines of the tractogram into analysis)
+          tckdfc
 
   # end. Author@clancy_wu, kangwu@uiowa.edu
