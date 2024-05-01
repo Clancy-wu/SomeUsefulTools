@@ -28,3 +28,5 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --resource-monitor \
 --notrack \
 --stop-on-first-crash
+
+
