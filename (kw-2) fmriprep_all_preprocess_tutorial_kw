@@ -29,4 +29,37 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --notrack \
 --stop-on-first-crash
 
+==================================================================================================================
+# If you only output an space results (like MNI152NLin2009cAsym:res-2), but also you have do with recon-all, then
+# you can use the follows to output in fsaverage5 space and fsvative space.
+==================================================================================================================
+Important note:
+(1) If you care about cortex and subcortex, you should analysis data in Volumn Space.
+        no recon-all
+        output-spaces MNI152NLin2009cAsym:res-2 | MNI152NLin6Asym:res-2
+(2) If you want all data.
+        with recon-all
+        output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 fsnative T1w
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
