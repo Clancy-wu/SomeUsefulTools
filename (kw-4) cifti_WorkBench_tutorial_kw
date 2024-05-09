@@ -1,1 +1,6 @@
-
+###############################################
+Parcels: each index refers to a named subset of the brainordinates (i.e. 'V1', and the surface vertices in V1)
+Scalars: each index is simply given a name (i.e. 'Myelin')
+Series: each index is assigned a quantity in a linear series (i.e., a timeseries of 0 sec, 0.7 sec, 1.4 sec, ...)
+Labels: each index is assigned a name (i.e., 'Visual Areas'), but also a list of labels that maps integer data values to names and colors (i.e.
+         {(5, 'V1', #ff0000), (7, 'V2', #00ff00), ...}
