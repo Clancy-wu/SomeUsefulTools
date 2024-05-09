@@ -1,38 +1,44 @@
-# fmriprep, --output-spaces fsaverage5 MNI152NLin2009cAsym:res-%s fsnative T1w
+#################################################################################
+# fmriprep command in DPABISurf: 
+#                                 --output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 fsnative T1w
+# However, if you want to add XCP_D to your script, you shoud use the following command: 
+#                                 --output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 MNI152NLin6Asym:res-2 --cifti 91k
+# For you analysis, you can: 
+#                 Volume Space: MNI152NLin2009cAsym:res-2 MNI152NLin6Asym:res-2
+#                 Surface Space: fsaverage5 (*2009c*), cifti 91k (*6A*)
+#################################################################################
+
 #!/bin/bash
-#$ -N isyb_fmriprep
-#$ -pe smp 3
+#$ -N cfs_fmriprep
+#$ -pe smp 30
 #$ -q PINC,CCOM,UI
 #$ -j y
-#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/logs
-#$ -t 1-3:1
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/logs
+#$ -t 1-155:1
 OMP_NUM_THREADS=10
-subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
 singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
 export TEMPLATEFLOW_HOME=${singularityDir}/TemplateFlow
 export SINGULARITYENV_TEMPLATEFLOW_HOME=/templateflow
 singularity run --cleanenv \
--B /Shared/jianglab/3_Data_Working/structure_project_wk/isyb_bigdata/:/output \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/:/output \
 -B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
-${singularityDir}/fmriprep_v2314_kw.sif \
-/output/BIDS/ /output/fmriprep/ participant --participant-label ${subject} \
+${singularityDir}/fmriprep-latest.simg \
+/output/BIDS_155/ /output/fmriprep_155/ participant --participant-label ${subject} \
 --skip_bids_validation \
 --nprocs 10 --omp-nthreads 10 --mem 32000 \
 -w /output/work \
 --ignore fieldmaps \
 --output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 MNI152NLin6Asym:res-2 \
+--cifti 91k \
 --dummy-scans 5 \
 --fs-license-file ${singularityDir}/license.txt \
---fs-subjects-dir /output/freesurfer \
---cifti 91k \
+--fs-subjects-dir /output/freesurfer_155 \
 --output-layout bids \
 --resource-monitor \
 --notrack \
 --stop-on-first-crash
 
-==================================================================================================================
-# If you only output an space results (like MNI152NLin2009cAsym:res-2), but also you have do with recon-all, then
-# you can use the follows to output in fsaverage5 space and fsvative space.
 ==================================================================================================================
 Important note:
 (1) If you care about cortex and subcortex, you should analysis data in Volumn Space.
