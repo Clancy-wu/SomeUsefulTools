@@ -34,3 +34,35 @@ ${singularityDir}/xcp_d-v0_7_1rc5_kw.simg \
 --fs-license-file /output/license.txt \
 --resource-monitor \
 --stop-on-first-crash
+
+###############################################
+# CIFTI format
+###############################################
+time series: *dtseries.nii
+parcellations: *dlabel.nii
+scalar images: *dscalar.nii
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
