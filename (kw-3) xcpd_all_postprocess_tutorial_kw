@@ -1,0 +1,36 @@
+###############################################
+# add xcpd to be the postprocess
+###############################################
+#!/bin/bash
+
+#$ -N xcpd_No_parcel
+#$ -pe smp 30
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/logs
+#$ -t 1-155:1
+OMP_NUM_THREADS=10
+subject=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/sublist_xcp | head -n+${SGE_TASK_ID} | tail -n-1`
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+#Run qsiprep
+singularity run --cleanenv \
+-B /Shared/jianglab/3_Data_Working/structure_project_wk/chronic_fatigue/:/output \
+${singularityDir}/xcp_d-v0_7_1rc5_kw.simg \
+/output/fmriprep_155/ /output/xcp_d/ participant --participant-label ${subject} \
+--nthreads 10 --omp-nthreads 10 --mem-gb 20 \
+--input-type fmriprep \
+--cifti \
+--dummy-scans 0 \
+-p 36P \
+--fd-thresh 0.5 \
+--min-time 0 \
+--lower-bpf 0.01 \
+--upper-bpf 0.08 \
+--smoothing 6 \
+--skip-parcellation \
+-w /output/work \
+--skip-dcan-qc \
+--fs-license-file /output/license.txt \
+--resource-monitor \
+--stop-on-first-crash
