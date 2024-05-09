@@ -20,10 +20,11 @@ ${singularityDir}/fmriprep_v2314_kw.sif \
 --nprocs 10 --omp-nthreads 10 --mem 32000 \
 -w /output/work \
 --ignore fieldmaps \
---output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 fsnative T1w \
+--output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 MNI152NLin6Asym:res-2 \
 --dummy-scans 5 \
 --fs-license-file ${singularityDir}/license.txt \
 --fs-subjects-dir /output/freesurfer \
+--cifti 91k \
 --output-layout bids \
 --resource-monitor \
 --notrack \
@@ -39,9 +40,17 @@ Important note:
         output-spaces MNI152NLin2009cAsym:res-2 | MNI152NLin6Asym:res-2
 (2) If you want all data.
         with recon-all
-        output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 fsnative T1w
+        output-spaces fsaverage5 MNI152NLin2009cAsym:res-2 MNI152NLin6Asym:res-2
+        --cifti 91k
 
+Volume Space: MNI152NLin2009cAsym, MNI152NLin6Asym
+Surface Space: fsaverage5, cifti-91k
 
+xcp_d only avaliable in: cifti-91k -> processed
+       fsaverage5 -> none
+xcp_d output: 
+        Volume Space: MNI152NLin2009cAsym
+        Surface Space: cifti-91k
 
 
 
