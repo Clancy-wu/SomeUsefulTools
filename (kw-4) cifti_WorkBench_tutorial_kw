@@ -4,3 +4,24 @@ Scalars: each index is simply given a name (i.e. 'Myelin')
 Series: each index is assigned a quantity in a linear series (i.e., a timeseries of 0 sec, 0.7 sec, 1.4 sec, ...)
 Labels: each index is assigned a name (i.e., 'Visual Areas'), but also a list of labels that maps integer data values to names and colors (i.e.
          {(5, 'V1', #ff0000), (7, 'V2', #00ff00), ...}
+###############################################
+Increasing the value of the first index moves rightwards in the matrix, not downwards:
+Format: (different type indicators, vertices)
+         dconn: ROW is dense, COLUMN is dense          (vertices, vertices)
+         dscalar: ROW is scalars, COLUMN is dense      (scalars, vertices)
+         dtseries: ROW is series, COLUMN is dense      (time points, vertices)
+         dlabel: ROW is labels, COLUMN is dense        (labels, vertices)
+         pconn: ROW is parcels, COLUMN is parcels      (parcellations, vertices)
+         pdconn: ROW is dense, COLUMN is parcels       (vertices, parcellations)
+         dpconn: ROW is parcels, COLUMN is dense       (parcellations, vertices)
+         pscalar: ROW is scalars, COLUMN is parcels    (scalars, parcellations)
+         ptseries: ROW is series, COLUMN is parcels    (time series, pacellations)
+###############################################
+wb_command:
+-add-to-spec-file <specfile> <structure> <filename>: The resulting spec file overwrites the existing spec file.
+-cifti-all-labels-to-rois <label-in> <map> <cifti-out>: MAKE ROIS FROM ALL LABELS IN A CIFTI LABEL MAP.
+-cifti-convert:
+         one of -to-gifti-ext, -from-gifti-ext, -to-nifti, -from-nifti, -to-text, or -from-text should be specified.
+
+
+
