@@ -52,6 +52,7 @@ def create_func_network(func_file, out_func_dir, func_atlas):
     # df[0] = (TimePoints, Regions)
     df = regions.img_to_signals_labels(func_file, labels_img=func_atlas, background_label=0, strategy='mean')
     df_cor = pd.DataFrame(df[0]).corr(method='pearson') # (Regions, Regions)
+    df_cor.replace(1, 0, inplace=True) # make diagonal to be zero
     df_out_name = os.path.join(out_func_dir, f'PearCor_{sub_name}.txt')
     df_cor.to_csv(df_out_name, header=None, index=None, sep=' ')
 
