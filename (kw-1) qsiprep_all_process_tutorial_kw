@@ -74,9 +74,17 @@ Note: TWFC and TDI should get more attention.
     sub-sub001_space-T1w_desc-preproc_desc-wmFODmtnormed_ss3tcsd.nii.gz (wm)
     sub-sub001_space-T1w_desc-preproc_desc-mtinliermask_ss3tcsd.nii.gz (mask)
     sub-sub001_space-T1w_desc-preproc_desc-mtnorm_ss3tcsd.nii.gz (norm)
-    sub-sub001_space-T1w_desc-preproc_desc-siftweights_ifod2.csv (sift weights)
     sub-sub001_space-T1w_desc-preproc_desc-tracks_ifod2.tck (tck file)
-
+    sub-sub001_space-T1w_desc-preproc_desc-siftweights_ifod2.csv (sift2 weights)
+in dir 'qsirecon_wf/sub-0002_mrtrix_singleshell_ss3t_fast/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/ds_sift_weight'
+command 'tcksift2 -nthreads 10 
+                  -out_mu sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_mu.txt 
+                  /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3t_fast/sub_0002_space_T1w_desc_preproc_recon_wf/track_ifod2/tractography/tracked.tck 
+                  /output/work/qsirecon_wf/sub-0002_mrtrix_singleshell_ss3t_fast/sub_0002_space_T1w_desc_preproc_recon_wf/ss3t_csd/intensity_norm/sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm.mif 
+                  sub-0002_space-T1w_desc-preproc_dwi_wm_mtnorm_weights.csv'
+"desc": "siftweights"    "extension": ".csv"     "suffix": "ifod2"
+so 'sub-sub001_space-T1w_desc-preproc_desc-siftweights_ifod2.csv' is processed by sift2.
+  
     0.0 processes of ss3t_csd
       0.1 creat mif: qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.b (b_file)
                      qsiprep/sub-0002/dwi/sub-0002_space-T1w_desc-preproc_dwi.bval (bval_file)
