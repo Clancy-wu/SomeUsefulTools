@@ -147,4 +147,62 @@ fiber_files = glob(os.path.join(fiber_dir, '*', 'dwi', '*_space-T1w_desc-preproc
 fiber_iters = list(product(fiber_files, [fiber_prep_dir], [out_fiber_dir], [fiber_atlas]))
 run(create_fiber_network_batch, fiber_iters)
 
+#######################################################
+# network split to positive & negative & absolute
+def create_type_network(sub_name, result_dir, func_dir, fiber_dir):
+    sub_func_net = glob(os.path.join(func_dir, f'*{sub_name}*'))[0]
+    sub_fiber_net = glob(os.path.join(fiber_dir, f'*{sub_name}*'))[0]
+    sub_out_dir = os.path.join(result_dir, sub_name)
+    if not os.path.exists(sub_out_dir):
+        os.mkdir(sub_out_dir)
+    func_cor = pd.read_csv(sub_func_net,header=None, sep=' ')
+    fiber_cor = pd.read_csv(sub_fiber_net,header=None, sep=' ')
+    # abs net
+    func_abs = func_cor.copy()
+    fiber_abs = fiber_cor.copy()
+    func_abs = func_abs.abs()
+    fiber_abs = fiber_abs
+    func_abs.to_csv(os.path.join(sub_out_dir, f'abs_func_{sub_name}.txt'), header=None, index=None, sep=' ')
+    fiber_abs.to_csv(os.path.join(sub_out_dir, f'abs_fiber_{sub_name}.txt'), header=None, index=None, sep=' ')
+    # positive
+    func_pos = func_cor.copy()
+    fiber_pos = fiber_cor.copy()
+    pos_mask = (func_pos > 0)
+    func_pos[~pos_mask] = 0 # make value not in pos mask to be zero
+    fiber_pos[~pos_mask] = 0
+    func_pos.to_csv(os.path.join(sub_out_dir, f'pos_func_{sub_name}.txt'), header=None, index=None, sep=' ')
+    fiber_pos.to_csv(os.path.join(sub_out_dir, f'pos_fiber_{sub_name}.txt'), header=None, index=None, sep=' ')
+    # negative
+    func_neg = func_cor.copy()
+    fiber_neg = fiber_cor.copy()
+    func_neg[pos_mask] = 0
+    func_neg = func_neg.abs()
+    fiber_neg[pos_mask] = 0
+    func_neg.to_csv(os.path.join(sub_out_dir, f'neg_func_{sub_name}.txt'), header=None, index=None, sep=' ')
+    fiber_neg.to_csv(os.path.join(sub_out_dir, f'neg_fiber_{sub_name}.txt'), header=None, index=None, sep=' ')
+
+def create_type_network_batch(args):
+    return create_type_network(*args)
+
+def run(f, this_iter):
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        results = list(tqdm(executor.map(f, this_iter), total=len(this_iter)))
+    return results
+
+# cfs
+cfs_result_dir = '/home/clancy/Desktop/BrainFunction/NetResults/CFS'
+cfs_func_dir = '/home/clancy/Desktop/BrainFunction/NetFunc/CFS'
+cfs_fiber_dir = '/home/clancy/Desktop/BrainFunction/NetFiber/CFS'
+cfs_subs = [re.findall(r'_(sub-sub.*).txt', x)[0] for x in os.listdir(cfs_func_dir)]
+cfs_iters = list(product(cfs_subs, [cfs_result_dir], [cfs_func_dir], [cfs_fiber_dir]))
+run(create_type_network_batch, cfs_iters)
+
+# large population
+isyb_result_dir = '/home/clancy/Desktop/BrainFunction/NetResults/ISYB'
+isyb_func_dir = '/home/clancy/Desktop/BrainFunction/NetFunc/ISYB'
+isyb_fiber_dir = '/home/clancy/Desktop/BrainFunction/NetFiber/ISYB'
+isyb_subs = [re.findall(r'_(sub-.*).txt', x)[0] for x in os.listdir(isyb_func_dir)]
+isyb_iters = list(product(isyb_subs, [isyb_result_dir], [isyb_func_dir], [isyb_fiber_dir]))
+run(create_type_network_batch, isyb_iters)
+
 ######## end. author@kangwu.
