@@ -54,8 +54,9 @@ def create_func_network(func_file, out_func_dir, func_atlas):
     df_cor = pd.DataFrame(df[0]).corr(method='pearson') # (Regions, Regions)
     df_cor.replace(1, 0, inplace=True) # make diagonal to be zero
     df_cor = df_cor.fillna(0) # make some outlier labels to be zero
-    df_out_name = os.path.join(out_func_dir, f'PearCor_{sub_name}.txt')
-    df_cor.to_csv(df_out_name, header=None, index=None, sep=' ')
+    df_cor_z = np.arctanh(df_cor) # make fisherz transform
+    df_out_name = os.path.join(out_func_dir, f'PearCorZ_{sub_name}.txt')
+    df_cor_z.to_csv(df_out_name, header=None, index=None, sep=' ')
 
 def create_func_network_batch(args):
     return create_func_network(*args)
