@@ -83,7 +83,7 @@ def get_tms_amyg(ind_mask, label_mask):
         ## output
         return (sub_datatype, sub_name, sub_site, sub_size, L, R, Both)
     except:
-        return ('NoTMSfile', sub_name+'_NoTMS', sub_site, sub_size, 0, 0, 0)
+        pass
 
 def get_tms_amyg_batch(args):
     return get_tms_amyg(*args)
