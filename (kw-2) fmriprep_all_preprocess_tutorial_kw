@@ -58,10 +58,36 @@ xcp_d output:
         Volume Space: MNI152NLin2009cAsym
         Surface Space: cifti-91k
 
-
-
-
-
+==================================================================================================================
+#### update: use 12 degrees rather than 6 degrees
+==================================================================================================================
+#Run fmriprep
+singularity run --cleanenv \
+-B /Users/kangwu/work:/work \
+-B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
+${singularityDir}/fmriprep.sif \
+/Shared/jianglab/3_Data_Working/test/BIDS/ /Shared/jianglab/3_Data_Working/test/derivatives/fmriprep/ participant --participant-label ${subject} \
+--skip_bids_validation \
+--nprocs 8 --omp-nthreads 8 --mem 32000 \
+-t rest \
+-w work \
+--ignore slicetiming \
+--output-spaces MNI152NLin6Asym:res-2 MNI152NLin2009cAsym:res-native \
+--bold2t1w-init register \
+--bold2t1w-dof 12 --force-bbr \
+--slice-time-ref 0.5 \
+--dummy-scans 5 \
+--fd-spike-threshold 0.5 \
+--dvars-spike-threshold 1.5 \
+--skull-strip-template OASIS30ANTs \
+--skull-strip-fixed-seed \
+--skull-strip-t1w force \
+--fs-license-file /Shared/jianglab/3_Data_Working/test/license.txt \
+--cifti-output 91k \
+--output-layout bids \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash
 
 
 
