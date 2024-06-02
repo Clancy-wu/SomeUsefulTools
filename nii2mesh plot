@@ -108,6 +108,7 @@ plt.show()
 
 df = pd.DataFrame(colors)
 df.to_csv('strong_red_blue.cmap', index=None, header=None,sep=' ', float_format='%.6f')
+# /usr/local/fsl/fslpython/envs/fslpython/lib/python3.8/site-packages/fsleyes/assets
 ##############################################################################
 start_color = np.array([1, 1, 1])
 end_color = np.array([1, 0, 0])
@@ -119,6 +120,7 @@ plt.axis('off')
 plt.show()
 df = pd.DataFrame(colors)
 df.to_csv('strong_red_blue.cmap', index=None, header=None,sep=' ', float_format='%.6f')
+# /usr/local/fsl/fslpython/envs/fslpython/lib/python3.8/site-packages/fsleyes/assets
 ##############################################################################
 def rgba_to_int(red, green, blue, alpha):
     color_int = (alpha << 24) + (red << 16) + (green << 8) + blue
