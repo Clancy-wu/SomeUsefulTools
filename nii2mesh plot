@@ -1,0 +1,151 @@
+import os
+from nilearn import image
+import numpy as np
+import pandas as pd
+import math
+from scipy.interpolate import RegularGridInterpolator
+from matplotlib import pyplot as plt
+########################
+file = 'CIT_amyg_MNI152_R.nii.gz'
+file_mask = image.get_data(file)
+file_mask[file_mask>0] = 1
+file_mask = file_mask.astype(np.int16)
+image.new_img_like(ref_niimg=file, data=file_mask).to_filename('CIT_amyg_MNI152_R_mask.nii.gz')
+# nii2mesh test_value1.nii.gz aa.mz3
+###########
+def coord2voxel(my_coord, img_affine):
+    mni_x, mni_y, mni_z = my_coord[0], my_coord[1], my_coord[2]
+    coords = np.c_[
+        np.atleast_1d(mni_x).flat,
+        np.atleast_1d(mni_y).flat,
+        np.atleast_1d(mni_z).flat,
+        np.ones_like(np.atleast_1d(mni_z).flat),
+    ].T
+    project_affine = np.linalg.inv(img_affine)
+    voxel_x, voxel_y, voxel_z, _ = np.around(np.dot(project_affine, coords))
+    return voxel_x.item(), voxel_y.item(), voxel_z.item()
+###################################
+file_info = 'amyg_CCEP_activ_map_Bella.xlsx'
+df = pd.read_excel(file_info, sheet_name='amyg_CCEP_activ_map')
+df_filter = df[df['Stimsite']=='L-DLPFC']
+df_filter = df_filter.reset_index()
+img_name = 'BN_Atlas_246_2mm.nii.gz'
+#img_name = 'First_RightAmyg_res-1_MNI_mask.nii.gz'
+template_img = image.load_img(img_name)
+empty_data = np.zeros_like(template_img.get_fdata()) # 91, 109, 91
+
+for i in range(df_filter.shape[0]):
+    # 14 points
+    point_coord = [np.abs(df_filter.loc[i,'mni_X']), df_filter.loc[i,'mni_Y'], df_filter.loc[i,'mni_Z']]
+    point_voxel = coord2voxel(point_coord, template_img.affine)
+    empty_data[int(point_voxel[0]), int(point_voxel[1]), int(point_voxel[2])] = df_filter.loc[i,'sig1_mean']
+
+x = np.arange(91); y = np.arange(109); z = np.arange(91)
+#data = image.get_data('BN_Atlas_246_2mm.nii.gz')
+interpolator = RegularGridInterpolator((x, y, z), empty_data, method='quintic', bounds_error=False, fill_value=None)
+xi, yi, zi = np.meshgrid(np.linspace(0, 91, 182), np.linspace(0, 109, 218), np.linspace(0, 91, 182), indexing='ij')
+new_points = np.vstack((xi.flatten(), yi.flatten(), zi.flatten())).T
+interpolated_values = interpolator(new_points).reshape((182, 218, 182))
+
+mask_file = 'First_RightAmyg_res-1_MNI_mask.nii.gz'
+mask_data = image.get_data(mask_file) 
+interpolated_values[mask_data==0] = 0
+smooth_file = image.new_img_like(ref_niimg=mask_file, data=interpolated_values)
+image.smooth_img(smooth_file, fwhm=3).to_filename('prepared_display_with_LinearSetting.nii.gz')
+##############################################################################
+## filter node within amyg mask
+##############################################################################
+mask_file = 'CIT_amyg_MNI152_R.nii.gz'
+mask_img = image.load_img(mask_file)
+node_output = []
+for i in range(df_filter.shape[0]):
+    # 14 points
+    point_coord = [np.abs(df_filter.loc[i,'mni_X']), df_filter.loc[i,'mni_Y'], df_filter.loc[i,'mni_Z']]
+    point_voxel = coord2voxel(point_coord, mask_img.affine)
+    mask_node = mask_img.get_fdata()[int(point_voxel[0]), int(point_voxel[1]), int(point_voxel[2])]
+    #node_size = round(df_filter.loc[i,'sig1_mean'],2)
+    node_size = 0.3
+    if mask_node == 1:
+        node_class = int(2)
+        node_info = np.hstack((point_coord, node_class, node_size))
+        node_output.append(node_info)
+    elif mask_node == 2:
+        node_class = int(3)
+        node_info = np.hstack((point_coord, node_class, node_size))
+        node_output.append(node_info)
+    elif mask_node == 0:
+        node_class = int(4)
+        node_info = np.hstack((point_coord, node_class, node_size))
+        node_output.append(node_info)     
+    else:
+        pass
+
+pd.DataFrame(node_output).to_csv('CIT_amyg_MNI152_R_mask_test.node', index=None, header=None, sep=' ')
+
+##############################################################################
+# medial: green4 #008B00
+# lateral: marron3 #CD2990
+# white: #FFFFFF, 1,1,1
+# This is for CIT amygdala MNI152 atlas.
+# created by Kang Wu, Jun 1 2024
+#1 0.80392 0.16078 0.56470 Lateral Amyg
+#2 0.00000 0.54509 0.00000 Medial Amyg
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+# Define start, median, and end colors
+start_color = np.array([0, 0, 1])
+median_color = np.array([1, 1, 1])
+end_color = np.array([1, 0, 0])
+num_colors_per_segment = 128
+colors1 = np.linspace(start_color, median_color, num_colors_per_segment + 1)
+colors2 = np.linspace(median_color, end_color, num_colors_per_segment + 1)
+colors = np.vstack((colors1[:-1], colors2))
+# Visualize the colors
+plt.imshow([colors], aspect='auto')
+plt.axis('off')
+plt.show()
+
+df = pd.DataFrame(colors)
+df.to_csv('strong_red_blue.cmap', index=None, header=None,sep=' ', float_format='%.6f')
+
+##############################################################################
+def rgba_to_int(red, green, blue, alpha):
+    color_int = (alpha << 24) + (red << 16) + (green << 8) + blue
+    return color_int
+# Verify the conversion by extracting RGBA back from color_int
+def int_to_rgba(color_int):
+    alpha = (color_int >> 24) & 255
+    red = (color_int >> 16) & 255
+    green = (color_int >> 8) & 255
+    blue = color_int & 255
+    return red, green, blue, alpha
+
+# Example RGBA values
+red = 66
+green = 84
+blue = 135
+alpha = 67
+color_int = rgba_to_int(red, green, blue, alpha)
+print(f"color_int: {color_int}")
+
+extracted_rgba = int_to_rgba(color_int)
+print(f"Extracted RGBA: {extracted_rgba}")
+
+##############################################################################
+subcortical_fsl.mz3:	
+	brainstem = 'MNI152_T1_1mm_subbr_mask.nii.gz'
+	cerebellem = 'Cerebellum-MNIfnirt-maxprob-thr25-1mm.nii.gz'
+	sub_cor = image.math_img('img1 + img2', img1=brainstem, img2=cerebellem)
+	sub_cor.to_filename('subcortical_1mm_FSL_mask.nii.gz')
+	
+	#fslmaths subcortical_1mm_FSL.nii.gz -bin subcortical_1mm_FSL_mask.nii.gz
+	# should be int16
+	file = 'CIT_amyg_MNI152_R.nii.gz'
+	file_mask = image.get_data(file)
+	file_mask[file_mask>0] = 1
+	file_mask = file_mask.astype(np.int16)
+	image.new_img_like(ref_niimg=file, data=file_mask).to_filename('test_value1.nii.gz')
+	# nii2mesh test_value1.nii.gz aa.mz3
+
+	nii2mesh subcortical_1mm_FSL_mask.nii.gz -r 1 -p 0 -s 300 -l 0 -a 1 subcortical_fsl.mz3
