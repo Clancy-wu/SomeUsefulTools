@@ -108,7 +108,17 @@ plt.show()
 
 df = pd.DataFrame(colors)
 df.to_csv('strong_red_blue.cmap', index=None, header=None,sep=' ', float_format='%.6f')
-
+##############################################################################
+start_color = np.array([1, 1, 1])
+end_color = np.array([1, 0, 0])
+num_colors_per_segment = 256
+colors = np.linspace(start_color, end_color, num_colors_per_segment + 1)
+# Visualize the colors
+plt.imshow([colors], aspect='auto')
+plt.axis('off')
+plt.show()
+df = pd.DataFrame(colors)
+df.to_csv('strong_red_blue.cmap', index=None, header=None,sep=' ', float_format='%.6f')
 ##############################################################################
 def rgba_to_int(red, green, blue, alpha):
     color_int = (alpha << 24) + (red << 16) + (green << 8) + blue
