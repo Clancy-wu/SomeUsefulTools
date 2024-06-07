@@ -1,0 +1,52 @@
+library(fsbrain)
+library(data.table)
+##############################################
+library(RColorBrewer)
+library(freesurferformats)
+
+num_from_label <- function(data, label_file){
+  # data is 210
+  label_info = read.fs.annot(label_file)
+  label_vertex = label_info$label_codes
+  label_code = label_info$colortable_df$code
+  label_index = label_info$colortable_df$struct_index
+  empty_num = rep(0, length(label_vertex))
+  for (i in seq(210)){
+    i_code = label_code[label_index == i]
+    empty_num[label_vertex == i_code] = data[i]
+  }
+  empty_num[empty_num==0] = NA
+  return(empty_num)
+}
+
+plot_surf <- function(data){
+  # data is 210 values
+  colFn_diverging = function(n) { grDevices::hcl.colors(n, palette = "Blue-Red 3"); }
+  #rgla = list('trans_fun'=limit_fun(2,3)) # limit values
+  label_lh_file = '/home/clancy/Pictures/BN_Atlas_freesurfer/fsaverage/label/lh.BN_Atlas.annot'
+  label_rh_file = '/home/clancy/Pictures/BN_Atlas_freesurfer/fsaverage/label/rh.BN_Atlas.annot'
+  lh_num = num_from_label(data, label_lh_file)
+  rh_num = num_from_label(data, label_rh_file)
+  vis.data.on.fsaverage(
+    vis_subject_id = "fsaverage",
+    morph_data_lh = lh_num,
+    morph_data_rh = rh_num,
+    surface = "pial",
+    views = c("t4"),
+    rgloptions=rglo(),
+    rglactions = list(),
+    draw_colorbar = 'horizontal',
+    makecmap_options = list('colFn'=colFn_diverging, symm=TRUE, 'col.na'='white'),
+    bg = 'curv_light',
+    morph_data_both = NULL,
+    style = "default"
+  )
+}
+##############################################
+df_org = fread('all_sub_info_first_comp_coeff_df.csv')
+net_label_org = fread('tms_network_atlas/BN_7Net_253_Labels.csv')
+df = df_org[, 1:214] # sub, site, group, filepath, ROI-1~246
+net_label = net_label_org$`7Net_Name`[1:210]
+df_average = colMeans(df[, 5:214])
+plot_surf(df_average)
+
