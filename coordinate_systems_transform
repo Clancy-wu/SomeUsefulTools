@@ -1,0 +1,15 @@
+Types of coordinate systems:
+  (1) Scanner Space: coordinate center at *magnet isocenter*, bore axis is Z, X to the left, Y to the ceiling. Direction cosines and P0 defined in DICOM file.
+  (2) Native Space: basically the same as scanner, but RAS.
+  (3) Talairach Space:  coordinate center at Anterior Commisure (mid-connection of AC points), X to the right, Y points out of the noise, Z points out of the top of the head.
+  (4) RAS: Right-Anterior-Superior (anatomical coordinates). Recommend to use.
+      column-row-slice: CRS
+  (5) Field-of-View Based: arbitrarily choose center, directions arbitrary along the index axes.
+      FSL - center at the corner of the FoV
+      FreeSurfer (tkregister) - center at N/2
+  (6) MNI, SPM: use whatever is defined in the file format (eg, QForm/SForm)
+In summary: Talairach space use CRS (column-row-slice) + RSA (right-anterior-superior)
+
+Freesurfer System:
+  (1) VoxelCRS: location of the point in the voxel-based matrix.
+  (2)
