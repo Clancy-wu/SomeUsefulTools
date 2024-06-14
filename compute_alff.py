@@ -2,22 +2,22 @@
 # fmriprep process: orig file -> MNI file
 # xcp-d process:   MNI file -> denoise (nuisance regression) + filter -> alff + reho + time series -> smooth all results
 
-################## alff
+##########################################################################################
+#### alff
 orig_file = 'sub-sub001_task-rest_space-MNI152NLin2009cAsym_res-2_desc-denoised_bold.nii.gz'
 targ_file = 'sub-sub001_task-rest_space-MNI152NLin2009cAsym_res-2_stat-alff_boldmap.nii.gz'
 
 import nibabel as nb
 import numpy as np
 from scipy import signal
-from scipy.stats import rankdata
 
 # compute_alff(data_matrix, low_pass, high_pass, TR, sample_mask=None
 TR = 2.0
-file_data = nb.load(orig_file).get_fdata()
-data_matrix = file_data.reshape(( file_data.shape[0]*file_data.shape[1]*file_data.shape[2], file_data.shape[3]))
-
 high_pass = 0.01
 low_pass = 0.10
+
+file_data = nb.load(orig_file).get_fdata()
+data_matrix = file_data.reshape(( file_data.shape[0]*file_data.shape[1]*file_data.shape[2], file_data.shape[3]))
 
 #######################
 fs = 1 / TR  # sampling frequency
@@ -61,3 +61,36 @@ alff[alff!=0]
 targ_data_1d[targ_data_1d!=0]
 #array([1.57014704, 1.55542564, 0.97892725, ..., 0.86730099, 0.7737    ,
 #       0.83799011])
+
+##########################################################################################
+#### reho
+from scipy.stats import rankdata
+
+orig_file = 'sub-sub001_task-rest_space-MNI152NLin2009cAsym_res-2_desc-denoised_bold.nii.gz'
+targ_file = 'sub-sub001_task-rest_space-MNI152NLin2009cAsym_res-2_stat-reho_boldmap.nii.gz'
+
+file_data = nb.load(orig_file).get_fdata()
+datat = file_data.reshape(( file_data.shape[0]*file_data.shape[1]*file_data.shape[2], file_data.shape[3]))
+
+
+# compute_2d_reho(datat, adjacency_matrix)
+n_vertices = datat.shape[0]
+kcc = np.zeros(n_vertices)
+
+# adjacency_matrix = np.zeros([n_vertices, n_vertices], dtype=bool)
+# adjacency_matrix ??
+
+for i_vertex in range(n_vertices):  
+    neighbor_idx = np.where(adjacency_matrix[i_vertex, :])[0] 
+    neighborhood_idx = np.hstack((neighbor_idx, np.array(i_vertex)))
+    neighborhood_data = datat[neighborhood_idx, :]
+    rankeddata = np.zeros_like(neighborhood_data)
+    n_neighbors, n_volumes = neighborhood_data.shape[0], neighborhood_data.shape[1]
+    for j_neighbor in range(n_neighbors):
+        rankeddata[j_neighbor, :] = rankdata(neighborhood_data[j_neighbor, :])
+    rankmean = np.sum(rankeddata, axis=0)  # add up ranks
+    kc = np.sum(np.power(rankmean, 2)) - n_volumes * np.power(np.mean(rankmean), 2)
+    denom = np.power(n_neighbors, 2) * (np.power(n_volumes, 3) - n_volumes)
+    kcc[i_vertex] = 12 * kc / (denom)
+
+print(kcc)
