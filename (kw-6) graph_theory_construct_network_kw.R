@@ -85,3 +85,13 @@ save2dataframe(gw.sub, file=file.path('BrainGraphRDS/', 'ISYB_fiber_weighted_sub
 
 print('finished all')
 ########## end. author@kangwu
+
+# use self atlas
+my_atlas <- fread('ba_274_info.csv')
+as_atlas(my_atlas)
+for (i in seq_along(densities)){
+  gw.sub[[i]] <- make_brainGraphList(my.mats$A.norm.sub[[i]], 'my_atlas', level='subject',
+                                     modality = 'fmri', threshold = densities[i],
+                                     weighted = TRUE, gnames = sub_info$participant_id,
+                                     grpNames = sub_info$group )
+}
