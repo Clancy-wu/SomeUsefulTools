@@ -43,11 +43,11 @@ for (i in seq_along(densities)){
 gw.sub <- vector('list', length(densities))
 gw.group <- vector('list', length(densities))
 for (i in seq_along(densities)){
-  gw.sub[[i]] <- make_brainGraphList(my.mats$A.norm.sub[[i]], 'ba_274', level='subject',
+  gw.sub[[i]] <- make_brainGraphList(my.mats$A.norm.sub[[i]], 'ba_274', 
                                      modality = 'fmri',threshold = densities[i],
                                      weighted = TRUE, gnames = sub_info$participant_id,
                                      grpNames = NULL )
-  gw.group[[i]] <- make_brainGraphList(my.mats$A.norm.mean[[i]], 'ba_274', level='group',
+  gw.group[[i]] <- make_brainGraphList(my.mats$A.norm.mean[[i]], 'ba_274', 
                                      modality = 'fmri',threshold = densities[i],
                                      weighted = TRUE,  grpNames = NULL )  
 }
@@ -61,11 +61,11 @@ save2dataframe(gw.group, file=file.path(output_dir, 'rsfmri_group_raw_brain274')
 single_density = 0.25
 my.mats <- create_mats(matfiles, modality = 'fmri',threshold.by = 'density',
                        mat.thresh = single_density, inds = inds)
-gw.sub <- make_brainGraphList(my.mats$A.norm.sub[[1]], 'ba_274', level='subject',
+gw.sub <- make_brainGraphList(my.mats$A.norm.sub[[1]], 'ba_274', 
                                    modality = 'fmri',threshold = single_density,
                                    weighted = TRUE, gnames = sub_info$participant_id,
                                    grpNames = NULL )
-gw.group <- make_brainGraphList(my.mats$A.norm.mean[[1]], 'ba_274', level='group',
+gw.group <- make_brainGraphList(my.mats$A.norm.mean[[1]], 'ba_274',
                                      modality = 'fmri',threshold = single_density,
                                      weighted = TRUE,  grpNames = NULL ) 
 
