@@ -32,6 +32,14 @@ inds = lapply(grps, function(x) sub_info[group == x, which = TRUE])
 matfiles <- paste0(brain_274_dir,'/', sub_info$participant_id, '/PearCorZ_', sub_info$participant_id, '.txt')
 my.mats <- create_mats(matfiles, modality = 'fmri',threshold.by = 'density',
                        mat.thresh = densities, inds = inds)
+# check the minimun value of raw matrix
+for (i in seq_along(densities)){
+  Min = min(my.mats$A.norm.sub[[i]])
+  print(i)
+  print(Min)
+}
+# if values are all higher than 0, then the raw matrix could be used.
+              
 gw.sub <- vector('list', length(densities))
 gw.group <- vector('list', length(densities))
 for (i in seq_along(densities)){
