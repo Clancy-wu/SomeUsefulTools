@@ -59,20 +59,7 @@ save2dataframe(gw.group, file=file.path(output_dir, 'rsfmri_group_raw_brain274')
 
 ## cell report
 single_density = 0.25
-my.mats <- create_mats(matfiles, modality = 'fmri',threshold.by = 'density',
-                       mat.thresh = single_density, inds = inds)
-gw.sub <- make_brainGraphList(my.mats$A.norm.sub[[1]], 'ba_274', 
-                                   modality = 'fmri',threshold = single_density,
-                                   weighted = TRUE, gnames = sub_info$participant_id,
-                                   grpNames = NULL )
-gw.group <- make_brainGraphList(my.mats$A.norm.mean[[1]], 'ba_274',
-                                     modality = 'fmri',threshold = single_density,
-                                     weighted = TRUE,  grpNames = NULL ) 
 
-saveRDS(gw.sub, file=file.path(output_dir, 'rsfmri_subject_CellReport_brain274.rds'), compress = 'xz')
-save2dataframe(gw.sub, file=file.path(output_dir, 'rsfmri_subject_CellReport_brain274'))
 
-saveRDS(gw.group, file=file.path(output_dir, 'rsfmri_group_CellReport_brain274.rds'), compress = 'xz')
-save2dataframe(gw.group, file=file.path(output_dir, 'rsfmri_group_CellReport_brain274'))
 print('finished.')
 # end. kangwu
