@@ -1,0 +1,11 @@
+# Step 1: tranform MNI coordinate to voxel location in FSLeyes
+
+# Step 2: locate coordinate
+#### x,y,z is the voxel coord, not scan coord
+fslmaths MNI152_T1_2mm_brain.nii.gz -roi x 1 y 1 z 1 0 1 tmp
+
+# Step 3: make sphere ROI mask
+fslmaths tmp -kernel sphere 10 -fmean -bin sphere
+
+# Step 4: overlapped with grey matter mask to constrain the ROI in the grey matter
+fslmaths gray_thr0.2.nii -mul sphere.nii.gz ROI_mask
