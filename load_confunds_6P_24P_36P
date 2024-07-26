@@ -1,1 +1,12 @@
 # The strategy for head motion regression
+6P: "rot_x", "rot_y", "rot_z", "trans_x", "trans_y", "trans_z"
+24P: 6P * (X, X2, dX, dX2)
+36P: (6P + WM, CFS, Global Signals) * (X, X2, dX, dX2)
+
+All these are provided by fMRIPrep.
+
+Note:
+  X:     basic:          translation/rotation (6)
+  X2:    power2:         translation/rotation + quadratic terms (12)
+  dX:    derivatives:    translation/rotation + derivatives (12)
+  dX2:   full:           translation/rotation + derivatives + quadratic terms + power2d derivatives (24)
