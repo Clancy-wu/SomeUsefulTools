@@ -1,0 +1,48 @@
+###### ROI transfer #########################################################
+-f fix image, the one in the target space
+-m move image, the one in the source space
+-o prefix output
+Total elapsed time: 65.25
+
+fslmaths nodif_brain_mask.nii.gz -mul T1w_acpc_dc_restore_1.25.nii.gz T1w_crop.nii.gz
+
+antsRegistrationSyNQuick.sh -d 3 
+			-f T1w_crop.nii.gz 
+			-m tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz 
+			-o mni2native
+
+“SyN”: Symmetric normalization: Affine + deformable transformation,
+	with mutual information as optimization metric.
+	
+antsApplyTransforms -d 3 
+        -i big_dlpfc_native.nii.gz 
+        -r tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz 
+        -o big_dlpfc_MNI_test.nii.gz 
+        -t mni2native0GenericAffine.mat
+        -n NearestNeighbor
+
+antsApplyTransforms -d 3 
+        -i big_dlpfc_native.nii.gz 
+        -r tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz 
+        -o big_dlpfc_MNI_test.nii.gz 
+        -t [mni2native0GenericAffine.mat, 1] 
+        -n NearestNeighbor
+
+				
+antsApplyTransforms --default-value 0 --float 0 
+			--input Big_DLPFC_LH.nii.gz 
+			--interpolation NearestNeighbor 
+			--output big_dlpfc_native.nii.gz 
+			--reference-image T1w_crop.nii.gz 
+			--transform mni2native0GenericAffine.mat
+
+antsApplyTransforms --default-value 0 --float 0 
+			--input Amyg_First_LH.nii.gz 
+			--interpolation NearestNeighbor 
+			--output amyg_first_native.nii.gz 
+			--reference-image T1w_crop.nii.gz 
+			--transform mni2native0GenericAffine.mat
+
+###################################################
+we can only keep mni2native0GenericAffine.mat because it is 193 bytes.
+Otherwise, two warp.nii.gz are 140 MB
