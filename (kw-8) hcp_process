@@ -1,0 +1,225 @@
+This is 3T Diffusion preproc data of HCP1065 subjects downloaded from https://db.humanconnectome.org/.
+
+# Data structure, example: 100206
+100206/
+      T1w/
+          T1w_acpc_dc_restore_1.25.nii.gz (T1 img)
+          Diffusion/
+              bvals (diffusion weighting), 
+              bvecs (direction), 
+              data.nii.gz (dwi img), 
+              grad_dev.nii.gz (can be used to account for gradient nonlinearities during model fitting), 
+              nodif_brain_mask.nii.gz (brain mask)
+    
+# Data information
+T1 img: 145 x 174 x 145 (dimension), 1.25 (voxel size), LAS
+		-1.2500   0.0000   0.0000    90.0000
+                0.0000   1.2500   0.0000  -126.0000
+                0.0000   0.0000   1.2500   -72.0000
+                0.0000   0.0000   0.0000     1.0000
+             
+diffusion weighting: multi-shell, multi-tissue
+    5 1000 1995 3005 995 2995 2005 990 1990 3000 1000 1985 2995 1005 1995 2995
+    
+direction: formal
+
+dwi.img: 145 x 174 x 145 x 288 (dimension), 1.25 (voxel size), LAS
+               -1.2500   0.0000   0.0000    90.0000
+                0.0000   1.2500   0.0000  -126.0000
+                0.0000   0.0000   1.2500   -72.0000
+                0.0000   0.0000   0.0000     1.0000
+
+grad_dev.nii.gz: 145 x 174 x 145 x 9 (dimension), 1.25 (voxel size), LAS
+               -1.2500   0.0000   0.0000    90.0000
+                0.0000   1.2500   0.0000  -126.0000
+                0.0000   0.0000   1.2500   -72.0000
+                0.0000   0.0000   0.0000     1.0000
+                
+brain mask: 145 x 174 x 145 x 9 (dimension), 1.25 (voxel size), LAS
+               -1.2500   0.0000   0.0000    90.0000
+                0.0000   1.2500   0.0000  -126.0000
+                0.0000   0.0000   1.2500   -72.0000
+                0.0000   0.0000   0.0000     1.0000
+                
+*after checking, all 1065 dwi data are same dimension with 145 x 174 x 145*
+
+# Data preprocess
+The HCP diffusion data used in this study had already undergone preprocessing by the Wu-Minn consortium (Andersson et al. 2003; Andersson et al. 2012): the b0 image intensity was normalized across runs; EPI distortions, eddy-current-induced distortions, and subject motion were removed; gradientnonlinearities were corrected; and the diffusion data were registered with the structural image, brought into 1.25 mm structural space, and masked with the final brain mask. Preprocessing was performed using the FSL software (TOPUP, EDDY, and FLIRT tools; Jenkinson et al. 2012), further information on the preprocessing of the diffusion data can be found on the HCP website (http://www. humanconnectome.org/documentation/).
+
+Note: normalize intensity + EPI distortions + eddy-curent-induced distortion + remove head motion + correct gradientnonlinearities + registered with structural image + masked with the brain mask (all were performed in FSL software: TOPUP, EDDY, FLIRT)
+
+# Basic stpes from MRtrix3
+1. Segment tissues for image
+	5ttgen fsl T1w_acpc_dc_restore_brain.nii.gz 5TT.mif -nocrop
+2. DWI format transfer (RAS)
+	mrconvert data.nii.gz DWI.mif -fslgrad bvecs bvals -datatype float32 -strides 0,0,0,1
+  Transform:                    1           0           0         -90
+                               -0           1           0        -126
+                               -0           0           1         -72
+3. Response Function estimate (FOD)
+	dwi2response msmt_5tt DWI.mif 5TT.mif RF_WM.txt RF_GM.txt RF_CSF.txt -voxels RF_voxels.mif
+4. Multi-shell multi-tissue CSD
+	dwi2fod msmt_csd DWI.mif RF_WM.txt WM_FODs.mif RF_GM.txt GM.mif RF_CSF.txt CSF.mif -mask nodif_brain_mask.nii.gz
+5. Generate tractogram (iFOD2)
+	tckgen WM_FODs.mif 100M.tck -act 5TT.mif -backtrack -crop_at_gmwmi -seed_dynamic WM_FODs.mif -maxlength 250 -select 100M -cutoff 0.06
+	Note: Maximum length is highly recommended to set 250; cutoff is highly recommended to set slow like 0.06, default is 0.1
+
+Standard LPS+
+               -1.0000  -0.0000  -0.0000    96.0000
+               -0.0000  -1.0000  -0.0000    96.0000
+                0.0000   0.0000   1.0000   -78.0000
+                0.0000   0.0000   0.0000     1.0000
+Q: The data.nii.gz is LAS orientation, why donot rotate it to LPS+ ?
+    A: In fact, MRtrix3 is consist with RAS space (https://mrtrix.readthedocs.io/en/latest/getting_started/image_data.html) instead of LPS.
+    	The LPS + Q space are used only in QSIPrep, which is though better in preprocessing steps. But HCP has been preprocessing.
+Details:
+    FSL image FSL_HCP_FA_1mm is LAS+, which means volumn index of the image start from RPI+ (left down) and end at LAS+ (right top).
+Q: Why use -strides 0,0,0,1
+    A: Actually use or not use are identical. The command mrconvert will autometically transfer orientation to RAS.
+    The strides is use for: making volume data contiguous in memory for each voxel in order to quick computation.
+
+# Recommend stpes in this script from KangWu
+# Note: Combining with ACT and FAST is not recommended. So, this script is used for ROI-ROI based track.
+
+###### ROI transfer #########################################################
+-f fix image, the one in the target space
+-m move image, the one in the source space
+-o prefix output
+Total elapsed time: 65.25
+
+fslmaths nodif_brain_mask.nii.gz -mul T1w_acpc_dc_restore_1.25.nii.gz T1w_crop.nii.gz
+
+antsRegistrationSyNQuick.sh -d 3 
+			-f T1w_crop.nii.gz 
+			-m tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz 
+			-o mni2native
+
+“SyN”: Symmetric normalization: Affine + deformable transformation,
+	with mutual information as optimization metric.
+	
+antsApplyTransforms -d 3 \
+  -i bma-1-region_seg.nii.gz \
+  -r sp2_avg_mri_exvivo_t2wi_v1.0.0.nii.gz \
+  -o label1_to_brain2.nii.gz \
+  -t brain1_to_brain2_1Warp.nii.gz \
+  -t brain1_to_brain2_0GenericAffine.mat \
+  -n NearestNeighbor
+antsApplyTransforms -d 3 \
+    -i sp2_label_512_v1.0.0.nii.gz \
+    -r bma-1-mri.nii.gz \
+    -o label2_to_brain1.nii.gz \
+    -t [brain1_to_brain2_0GenericAffine.mat, 1] \
+    -t brain1_to_brain2_1InverseWarp.nii.gz \
+    -n NearestNeighbor 
+				
+antsApplyTransforms --default-value 0 --float 0 
+			--input Big_DLPFC_LH.nii.gz 
+			--interpolation NearestNeighbor 
+			--output big_dlpfc_native.nii.gz 
+			--reference-image T1w_crop.nii.gz 
+			--transform mni2native0GenericAffine.mat
+
+antsApplyTransforms --default-value 0 --float 0 
+			--input Amyg_First_LH.nii.gz 
+			--interpolation NearestNeighbor 
+			--output amyg_first_native.nii.gz 
+			--reference-image T1w_crop.nii.gz 
+			--transform mni2native0GenericAffine.mat
+
+mrconvert amyg_first_native.nii.gz amyg_first_native.mif
+mrconvert dlpfc_native.nii.gz dlpfc_native.mif
+
+   
+# 0. Segment tissues for iamge
+#	# 5ttgen fsl T1w_acpc_dc_restore_brain.nii.gz 5TT.mif -nocrop
+###### Track run #########################################################
+
+1. creat mif
+	mrconvert data.nii.gz DWI.mif -fslgrad bvecs bvals -datatype float32 -strides 0,0,0,1
+(1-2) make a mask for RF estimation:
+	dwi2mask DWI.mif DWI_mask.mif (cannot use T1_brain_mask, because they are different)
+2. estimate_response
+	dwi2response dhollander DWI.mif DWI_wm.txt DWI_gm.txt DWI_csf.txt -mask DWI_mask.mif -nthreads 10
+3. estimate_fod
+	dwi2fod msmt_csd DWI.mif DWI_wm.txt DWI_wm.mif DWI_gm.txt DWI_gm.mif DWI_csf.txt DWI_csf.mif -mask DWI_mask.mif -nthreads 10
+4. intensity_norm (make cross-subjects comparable)
+	mtnormalise DWI_wm.mif DWI_wm_mtnorm.mif DWI_gm.mif DWI_gm_mtnorm.mif DWI_csf.mif DWI_cfs_mtnorm.mif -mask DWI_mask.mif -nthreads 10
+5. tractography (ROI-ROI track)
+
+	tckgen DWI_wm_mtnorm.mif ROI.tck \
+		-algorithm iFOD2 \		
+		-maxlength 200.000000 \
+		-minlength 30.000000 \
+		-cutoff 0.06 \
+		-samples 4 \
+		-power 0.330000 \
+		-seed_image dlpfc_native.mif \ 
+		-seed_image amyg_first_native.mif \
+		-seeds 10000000 \
+		-include dlpfc_native.mif \
+		-incldue amyg_first_native.mif \
+		-nthreads 10
+		
+	abondom common:
+		-seed_dynamic determine seed points dynamically using the SIFT model (must not provide
+     any other seeding mechanism)
+     		-act 5TT.mif because we donot use 5TT to track in white.
+     		-seed_gmwmi ROI1_native.mif ROI2_native.mif
+     		-backtrack 
+           	-crop_at_gmwmi 
+           	
+# recommend
+	tckgen DWI_wm_mtnorm.mif ROI1_2.tck \
+		-algorithm iFOD2 \
+		-maxlength 200.000000 \
+		-minlength 30.000000 \
+		-cutoff 0.06 \
+		-samples 4 \
+		-power 0.330000 \
+		-seed_image dlpfc_native.mif \ 
+		-seeds 1000000 \
+		-seed_unidirectional \
+		-include amyg_first_native.mif \
+		-stop \
+		-nthreads 10
+
+	tckgen DWI_wm_mtnorm.mif ROI2_1.tck \
+		-algorithm iFOD2 \
+		-maxlength 200.000000 \
+		-minlength 30.000000 \
+		-cutoff 0.06 \
+		-samples 4 \
+		-power 0.330000 \
+		-seed_image amyg_first_native.mif \ 
+		-seeds 1000000 \
+		-seed_unidirectional \
+		-include dlpfc_native.mif \
+		-stop \
+		-nthreads 10		 
+
+6. edit tractography
+	tckedit ROI*.tck ROI1_ROI2.tck
+
+# remove LH or RH sphere fibers
+
+antsApplyTransforms --default-value 0 --float 0 
+			--input a2009s_1mm/a2009s_LH_mask.nii.gz
+			--interpolation NearestNeighbor
+			--output native_LH_mask.nii.gz
+			--reference-image T1w_crop.nii.gz 
+			--transform mni2native0GenericAffine.mat
+	
+Q: Why donot use ACT to enhance white matter tracking ?
+A: (1) 5TT is conflict with -mask in tckgen. (2) ACT is conflict with FAST. So, We choose to use -mask to
+limit streamlines in lateral sphere.
+
+Q: Why donot use a same native LH mask for each subject ?
+A: I have compared four subjects, their brain tissue are different, although they are in same dimension. So
+the same native mask is registered badly.
+
+Q: The best parameters for maxlength of LH DLPFC-AMYG ?
+A: I have checked in one subject, maxlength=200 seems to be better than maxlength=250,
+perhaps in the DLPFC-AMYG only
+
+5. tck to density map
+tckmap -template masked_BN_246_space-T1w.nii.gz dlpfc_amg_LH.tck dlpfc_amg_LH_map.nii.gz
