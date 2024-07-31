@@ -9,8 +9,6 @@
 OMP_NUM_THREADS=5
 
 singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
-#export FSL_DIR=/Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5
-#source ${FSL_DIR}/etc/fslconf/fsl.sh
 
 sub_name=`cat /Shared/jianglab/3_Data_Working/structure_project_wk/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
 
@@ -35,7 +33,6 @@ sub_mask=${sub_dir}/Diffusion/nodif_brain_mask.nii.gz
 ## run output
 #### 1. anat process
 sub_anat_prepare=${sub_out_dir}/sub-${sub_name}_desc-preproc_T1w.nii.gz
-# fslmaths ${sub_anat} -mul ${sub_mask} ${sub_anat_prepare}
 /Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5/bin/fslmaths ${sub_anat} -mul ${sub_mask} ${sub_anat_prepare}
 
 #### 1.1 register
