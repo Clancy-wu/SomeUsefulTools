@@ -261,6 +261,16 @@ As a last note: I only entered the inverse warp file as transformation file, but
 Thank you very much for your help,
 Franziska
 
+##################################
+## myself usage
+warpinit tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz inv_identity_warp[].nii
+
+for i in {0..2}; do
+    antsApplyTransforms -d 3 -e 0 -i inv_identity_warp${i}.nii -o inv_mrtrix_warp${i}.nii -r T1_crop.nii.gz -t mni2native0GenericAffine.mat --default-value 2147483647
+done
+
+warpcorrect inv_mrtrix_warp[].nii inv_mrtrix_warp_corrected.mif -marker 2147483647
+tcktransform ROIs_space-T1w.tck inv_mrtrix_warp_corrected.mif target.tck
 
 
 
