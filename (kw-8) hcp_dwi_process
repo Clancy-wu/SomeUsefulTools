@@ -281,3 +281,4 @@ To avoid this problem you could just use the option of fsl “copysfrom2qform”
 
 ## Even though, I do not recommend to transfer to MNI sapce. Actually, a better choice is to compute tckmap
 in the native space, making native_space.nii.gz, and then transfer it to MNI space.
+BUT also you can transfer fibers to MNI for visualization or something else.
