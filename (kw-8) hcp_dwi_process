@@ -239,6 +239,9 @@ done
 3. Fix warp
 warpcorrect inv_mrtrix_warp[].nii inv_mrtrix_warp_corrected.mif -marker 2147483647
 
+# I suspect that’s the highest value that can be stored as a 32-bit signed integer:
+2 ** (31) − 2 = 2147483647, and just happens to be what ANTs writes out for out-of-bounds values…
+
 4. Transform tracks file or mif files
 mrtransform reference.nii -warp inv_mrtrix_warp_corrected.mif reference_warped.mif
 tcktransform input.tck inv_mrtrix_warp_corrected.mif target.tck
