@@ -177,7 +177,7 @@ mrconvert dlpfc_native.nii.gz dlpfc_native.mif
 		-samples 4 \
 		-power 0.330000 \
 		-seed_image dlpfc_native.mif \ 
-		-seeds 1000000 \
+		-seeds 10000000 \
 		-seed_unidirectional \
 		-include amyg_first_native.mif \
 		-stop \
@@ -191,7 +191,7 @@ mrconvert dlpfc_native.nii.gz dlpfc_native.mif
 		-samples 4 \
 		-power 0.330000 \
 		-seed_image amyg_first_native.mif \ 
-		-seeds 1000000 \
+		-seeds 10000000 \
 		-seed_unidirectional \
 		-include dlpfc_native.mif \
 		-stop \
