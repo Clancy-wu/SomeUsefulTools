@@ -246,7 +246,20 @@ warpcorrect inv_mrtrix_warp[].nii inv_mrtrix_warp_corrected.mif -marker 21474836
 mrtransform reference.nii -warp inv_mrtrix_warp_corrected.mif reference_warped.mif
 tcktransform input.tck inv_mrtrix_warp_corrected.mif target.tck
 
+Hi William,
+Great - thank you for your help! It worked now!
 
+Just to make sure that I understood things right:
+
+First, I perform my non-linear registration using ANTs SyN to register my T1 to MNI152 space
+Then, I initialize the warp of the MNI152 template
+To apply the transformation to my initialized MNI152 warp, with my T1 image as reference image, I use the inverse warp file (previously received as ANTs output in step 1) as my transformation input file
+I then fix the warp with warpcorrect
+I can then use this MRtrix compatible inverse warp file to transform my .tck file to MNI152 space using tcktransform
+As a last note: I only entered the inverse warp file as transformation file, but left the .mat file out, as I did not receive that as ANTs output. Is that fine or does that lead to different results?
+
+Thank you very much for your help,
+Franziska
 
 
 
