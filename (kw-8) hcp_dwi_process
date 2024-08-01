@@ -226,6 +226,8 @@ tckmap -template masked_BN_246_space-T1w.nii.gz dlpfc_amg_LH.tck dlpfc_amg_LH_ma
 
 #########################################################################################
 ## tck to MNI
+#### https://community.mrtrix.org/t/registration-using-transformations-generated-from-other-packages/2259/8
+
 1. Initialise warp
 warpinit reference.mif inv_identity_warp[].nii
 
