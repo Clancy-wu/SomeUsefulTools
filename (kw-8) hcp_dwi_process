@@ -271,6 +271,6 @@ done
 
 warpcorrect inv_mrtrix_warp[].nii inv_mrtrix_warp_corrected.mif -marker 2147483647
 tcktransform ROIs_space-T1w.tck inv_mrtrix_warp_corrected.mif target.tck
-
+tckmap target.tck -template tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz target_space-MNI.nii.gz
 
 
