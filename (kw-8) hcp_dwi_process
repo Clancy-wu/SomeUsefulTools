@@ -223,3 +223,26 @@ perhaps in the DLPFC-AMYG only
 
 5. tck to density map
 tckmap -template masked_BN_246_space-T1w.nii.gz dlpfc_amg_LH.tck dlpfc_amg_LH_map.nii.gz
+
+#########################################################################################
+## tck to MNI
+1. Initialise warp
+warpinit reference.mif inv_identity_warp[].nii
+
+2. Apply the transformation to identity warp
+for i in {0..2}; do
+    antsApplyTransforms -d 3 -e 0 -i inv_identity_warp${i}.nii -o inv_mrtrix_warp${i}.nii -r input.nii -t [ants0GenericAffine.mat, 1] -t ants1InverseWarp.nii.gz --default-value 2147483647
+done
+
+3. Fix warp
+warpcorrect inv_mrtrix_warp[].nii inv_mrtrix_warp_corrected.mif -marker 2147483647
+
+4. Transform tracks file or mif files
+mrtransform reference.nii -warp inv_mrtrix_warp_corrected.mif reference_warped.mif
+tcktransform input.tck inv_mrtrix_warp_corrected.mif target.tck
+
+
+
+
+
+
