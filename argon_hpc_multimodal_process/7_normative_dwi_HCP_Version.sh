@@ -30,6 +30,9 @@ if [ ! -d ${output_t1} ]; then mkdir ${output_t1}; fi
 ROI1_mni=/Shared/jianglab/3_Data_Working/structure_project_wk/Big_DLPFC_LH_FSL.nii.gz
 ROI2_mni=/Shared/jianglab/3_Data_Working/structure_project_wk/Amyg_First_LH_FSL.nii.gz
 
+echo ROI_1: ${ROI1_mni}
+echo ROI_2: ${ROI2_mni}
+
 #### main run
 
 # make dir 
