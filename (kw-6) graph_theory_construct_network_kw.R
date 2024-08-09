@@ -13,7 +13,7 @@ grps = c('health', 'patient')
 # 1_network_construction --------------------------------------------------
 
 ## Network contains positive & negative & absolute
-densities <- seq(0.10, 0.50, 0.01)
+densities <- seq(0.10, 0.34, 0.01)
 atlas = 'brainnetome'
 ## --------------------------------------------------------------------------
 save2dataframe <- function(data, file_path_suffix){
@@ -95,3 +95,21 @@ for (i in seq_along(densities)){
                                      weighted = TRUE, gnames = sub_info$participant_id,
                                      grpNames = sub_info$group )
 }
+
+##### check degree threshold values for func
+              
+matfiles <- paste0('NetResults_invnodal/CFS/', covars.all$participant_id, '/raw_func_', covars.all$participant_id, '_invnodal.txt') 
+for (i in matfiles){
+  All_value = fread(i, header = F) %>%
+    as.matrix(.) %>%
+    get_thresholds(., densities)
+  tail(All_value, 1)
+  output = paste(i, tail(All_value, 1))
+  print(output)
+}
+
+
+
+
+
+  
