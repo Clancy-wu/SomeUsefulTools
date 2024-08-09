@@ -98,7 +98,7 @@ for (i in seq_along(densities)){
 
 ##### check degree threshold values for func
               
-matfiles <- paste0('NetResults_invnodal/CFS/', covars.all$participant_id, '/raw_func_', covars.all$participant_id, '_invnodal.txt') 
+matfiles <- Sys.glob('NetResults_invnodal/ISYB/*/raw_func_*_invnodal.txt')
 for (i in matfiles){
   All_value = fread(i, header = F) %>%
     as.matrix(.) %>%
