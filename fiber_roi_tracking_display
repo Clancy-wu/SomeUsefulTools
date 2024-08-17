@@ -1,0 +1,2 @@
+# dlpfc_amyg_lh_1065Prob.tck
+tckconvert dlpfc_amyg_lh_1065Prob.tck -dec dlpfc_amyg_lh_1065Prob.ply
