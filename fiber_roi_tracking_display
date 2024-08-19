@@ -1,3 +1,6 @@
+# merge all tck files
+tckedit *.tck all_tracks.tck
+
 # dlpfc_amyg_lh_1065Prob.tck
 tckconvert dlpfc_amyg_lh_1065Prob.tck -dec dlpfc_amyg_lh_1065Prob.ply
 
