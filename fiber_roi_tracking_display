@@ -1,8 +1,12 @@
 # merge all tck files
 tckedit *.tck all_tracks.tck
 
+# cut off fibers
+tckedit dlpfc_amyg_lh_1065Prob_5k.tck -mask dlpfc_amyg_lh_1065Prob_50%.nii.gz dlpfc_amyg_lh_1065Prob_5k_50%.tck
+
+# minimize
+tckedit all_tracks.tck -number 5k -minlength 50 all_tracks_5k.tck
+
 # dlpfc_amyg_lh_1065Prob.tck
 tckconvert dlpfc_amyg_lh_1065Prob.tck -dec dlpfc_amyg_lh_1065Prob.ply
 
-# cut off fibers
-tckedit dlpfc_amyg_lh_1065Prob_5k.tck -mask dlpfc_amyg_lh_1065Prob_50%.nii.gz dlpfc_amyg_lh_1065Prob_5k_50%.tck
