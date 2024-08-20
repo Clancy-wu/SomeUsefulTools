@@ -10,3 +10,63 @@ tckedit all_tracks.tck -number 5k -minlength 50 all_tracks_5k.tck
 # dlpfc_amyg_lh_1065Prob.tck
 tckconvert dlpfc_amyg_lh_1065Prob.tck -dec dlpfc_amyg_lh_1065Prob.ply
 
+###########################################################################
+tck_dir = '/home/clancy/data/dti_dvlpfc_amyg_project/tck_data'
+subtck_dir = '/home/clancy/data/dti_dvlpfc_amyg_project/tck_subdata_SameSide'
+all_subs = os.listdir(subtck_dir)
+import re
+from itertools import product
+from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
+
+def run(f, file):
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        results = list(tqdm(executor.map(f, file), total=len(file)))
+    return results
+
+def get_opposite_mask(hemi):
+    if hemi =='LH':
+        return '/home/clancy/data/dti_dvlpfc_amyg_project/atlas/MNI152_T1_1mm_brain_mask_RH.nii.gz'
+    if hemi == 'RH':
+        return '/home/clancy/data/dti_dvlpfc_amyg_project/atlas/MNI152_T1_1mm_brain_mask_LH.nii.gz'
+
+def edit_tck_by_index(tck_file, out_dir, roi_mask, exclude_mask):
+    file_in = tck_file
+    file_out = os.path.join(out_dir, os.path.basename(tck_file))
+    edit_commond = f'tckedit {file_in} -include {roi_mask} -exclude {exclude_mask} {file_out} -quiet'
+    os.system(edit_commond)
+    return file_out
+
+def edit_tck_by_index_batch(args):
+    return edit_tck_by_index(*args)
+
+def binary_tck(tck_file):
+    file_in = tck_file
+    file_out = tck_file.replace('.tck', '.nii.gz')
+    ref_fsl = '/home/clancy/data/dti_dvlpfc_amyg_project/atlas/MNI152_T1_1mm_brain.nii.gz'
+    os.system(f'tckmap {file_in} -template {ref_fsl} {file_out} -quiet')
+    os.system(f'fslmaths {file_out} -thr 0 -bin {file_out}')
+
+for sub in all_subs[10:]:
+    sub_info = sub.split('_')
+    sub_org_tck_dir = f'{tck_dir}/{sub_info[0]}_{sub_info[1]}_{sub_info[0]}_amyg'
+    ### begin to edit
+    sub_org_tck_files = glob(sub_org_tck_dir+'/space_mni/*.tck') # tck_file
+    sub_tck_temp = f'{subtck_dir}/{sub}/temp' # out_dir
+    os.makedirs(sub_tck_temp, exist_ok=True)
+    sub_roi_mask = glob(f'/home/clancy/data/dti_dvlpfc_amyg_project/atlas/*_{sub_info[2]}.nii.gz')[0] # roi_mask
+    sub_exclude_mask = get_opposite_mask(sub_info[0].upper())  # exclude_mask
+    all_list = list(product(sub_org_tck_files, [sub_tck_temp], [sub_roi_mask], [sub_exclude_mask]))
+    files_out = run(edit_tck_by_index_batch, all_list)
+    run(binary_tck, files_out)
+    sub_tck_out = os.path.join(subtck_dir, sub)
+    image.mean_img(imgs=glob(f'{sub_tck_temp}/*.nii.gz'), n_jobs=10).to_filename(f'{sub_tck_out}/subtck_{sub_info[2]}.nii.gz')
+    os.system(f'tckedit {sub_tck_temp}/*.tck {sub_tck_out}/subtck_{sub_info[2]}.tck')
+    ## 80%
+    os.system(f'fslmaths {sub_tck_out}/subtck_{sub_info[2]}.nii.gz -thr 0.2 -bin {sub_tck_out}/subtck_{sub_info[2]}_80.nii.gz')
+    os.system(f'tckedit {sub_tck_out}/subtck_{sub_info[2]}.tck -mask {sub_tck_out}/subtck_{sub_info[2]}_80.nii.gz {sub_tck_out}/subtck_{sub_info[2]}_80.tck')
+    os.system(f'tckedit {sub_tck_out}/subtck_{sub_info[2]}_80.tck -minlength 50 -number 5k {sub_tck_out}/subtck_{sub_info[2]}_80_5k.tck')
+    os.system(f'tckconvert {sub_tck_out}/subtck_{sub_info[2]}_80_5k.tck -dec {sub_tck_out}/subtck_{sub_info[2]}_80_5k.ply')
+    print(f'{sub} finished')
+
+
