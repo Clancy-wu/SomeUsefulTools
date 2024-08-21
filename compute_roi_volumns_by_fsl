@@ -1,0 +1,24 @@
+import os
+from nilearn import image
+import numpy as np
+import subprocess
+
+sub_name = 'sub-sub001'
+# antsApplyTransforms -d 3 -i ROI1_mni.nii.gz -r t1.nii.gz -o ROI1_native.nii.gz -t mni2t1.mat  -n NearestNeighbor 
+def get_sub_volumn(sub_name):
+    template = '/home/clancy/data/BigData/chronic_fatigue/Amyg_R_2_1_space-2009cAsym_res-02.nii.gz'
+    sub_t = f'/home/clancy/data/BigData/chronic_fatigue/fmriprep_155/{sub_name}/anat/{sub_name}_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5'
+    sub_ref = f'/home/clancy/data/BigData/chronic_fatigue/fmriprep_155/{sub_name}/anat/{sub_name}_desc-preproc_T1w.nii.gz'
+    roi_temp = f'{sub_name}_roi_temp.nii.gz'
+    os.system(f'antsApplyTransforms -d 3 -i {template} -r {sub_ref} -o {roi_temp} -t {sub_t}  -n MultiLabel')
+    vol_commond = ['fslstats', f'{roi_temp}', '-V']
+    result = subprocess.run(vol_commond, text=True, capture_output=True)
+    out = sub_name+' '+result.stdout
+    os.remove(roi_temp)
+    return(out)
+    
+all_subs =[x for x in os.listdir('/home/clancy/data/BigData/chronic_fatigue/BIDS_155') if 'sub-sub' in x]
+for sub in all_subs:
+    sub_txt = get_sub_volumn(sub)
+    with open('Amyg_R_2_1_Volumn_155.txt', 'a') as file:
+        file.write(sub_txt)
