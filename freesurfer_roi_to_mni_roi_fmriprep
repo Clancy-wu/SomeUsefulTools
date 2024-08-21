@@ -1,0 +1,11 @@
+mri_convert -rl mri/rawavg.mgz -rt nearest mri/rh.hippoAmygLabels.mgz rh.hippoAmygLabels_space-T1w.nii.gz # freesurfer space, 176, 255, 255
+# sub-sub001_desc-preproc_T1w.nii.gz, 176, 255, 255
+
+# transform: sub-sub001_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
+antsApplyTransforms -d 3 -i sub-sub001_rh.hippoAmygLabels_space-T1w.nii.gz 
+    -r tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz 
+    -o sub-sub001_rh.hippoAmygLabels_space-MNI152NLin2009cAsym.nii.gz 
+    -t sub-sub001_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5 
+    -n MultiLabel
+
+# tranform very well !!!
