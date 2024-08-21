@@ -15,7 +15,7 @@ sub_name=`cat /Shared/jianglab/3_Data_Working/HCP1065/sublist | head -n+${SGE_TA
 hcp1065_prepare_dir=/Shared/jianglab/3_Data_Working/HCP1065
 output_dir=/Shared/jianglab/3_Data_Working/structure_project_wk/ndp_wk
 
-FSL_DIR=/Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5 # for mni normalize
+#FSL_DIR=/Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5 # for mni normalize
 ########################################################################
 ## main run
 
@@ -95,7 +95,7 @@ singularity exec ${singularityDir}/mrtrix3.sif /bin/bash -c " \
 
     tckedit ROI1_2.tck ROI2_1.tck ROIs_space-T1w.tck &&
 
-    warpinit ${FSL_DIR}/data/standard/MNI152_T1_1mm_brain.nii.gz inv_identity_warp[].nii
+    warpinit ${hcp1065_prepare_dir}/MNI152_T1_1mm_brain.nii.gz inv_identity_warp[].nii
 "
 
 echo begin native2mni `date`
