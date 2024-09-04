@@ -65,4 +65,4 @@ dataset_description = {
     "Others": "Remember work life balance"
     }
 with open(os.path.join(out_dir, 'dataset_description.json'), 'w') as json_file:
-    json.dump(dataset_description, json_file)
+    json.dump(dataset_description, json_file, indent='\t')
