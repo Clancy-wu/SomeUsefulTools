@@ -62,7 +62,7 @@ dataset_description = {
     "Author": "Kang Wu",
     "Acknowledgements": "No",
     "Time": "Aug 31 2024",
-    "Others": "Remenber work life balance"
+    "Others": "Remember work life balance"
     }
 with open(os.path.join(out_dir, 'dataset_description.json'), 'w') as json_file:
     json.dump(dataset_description, json_file)
