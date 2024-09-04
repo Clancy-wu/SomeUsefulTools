@@ -45,3 +45,10 @@ singularity run --cleanenv \
 	--resource-monitor \
 	--no-sub \
 	--notrack
+
+####################################################################################
+## group
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+singularity run --cleanenv -B /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/tmsfmri_fmriprep:/work_dir ${singularityDir}/mriqc_2024.sif /work_dir/BIDS /work_dir/mriqc group --no-sub --notrack
+
+
