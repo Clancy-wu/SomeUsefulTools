@@ -1,0 +1,17 @@
+import os
+import pandas as pd
+import numpy as np
+from nilearn import image
+from scipy.stats import zscore
+from nilearn.maskers import NiftiMasker
+
+# volume based T test
+def volume_one_Ttest(df_matrix):
+    # (sample, volumes)
+    df_mean = np.mean(df_matrix, axis=0)
+    sample_std = np.std(df_matrix, ddof=1, axis=0)
+    np.seterr(invalid='ignore')
+    std_error = sample_std / np.sqrt(df_matrix.shape[0])
+    T_map = df_mean / std_error
+    T_map[np.isnan(T_map)] = 0
+    return T_map
