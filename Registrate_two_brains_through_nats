@@ -46,3 +46,10 @@ antsApplyTransforms --default-value 0 --float 0
 ###################################################
 we can only keep mni2native0GenericAffine.mat because it is 193 bytes.
 Otherwise, two warp.nii.gz are 140 MB
+
+--interpolation Linear
+              NearestNeighbor                        MultiLabel[<sigma=imageSpacing>,<alpha=4.0>]
+              Gaussian[<sigma=imageSpacing>,<alpha=1.0>]   BSpline[<order=3>]  CosineWindowedSinc
+              WelchWindowedSinc              HammingWindowedSinc              LanczosWindowedSinc
+              GenericLabel[<interpolator=Linear>]
+
