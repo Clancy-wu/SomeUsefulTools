@@ -15,7 +15,6 @@ export FREESURFER_HOME=/Shared/pinc/sharedopt/apps/freesurfer/Linux/x86_64/7.4.0
 export SUBJECTS_DIR=/Shared/jianglab/3_Data_Working/tms_project_wk/project/data_input
 export FS_LICENSE=/Shared/jianglab/3_Data_Working/tms_project_wk/project/license.txt
 
-export FSL_DIR=/Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5
 export FSLDIR=/Shared/pinc/sharedopt/apps/fsl/Linux/x86_64/6.0.6.5
 source ${FSLDIR}/etc/fslconf/fsl.sh
 
