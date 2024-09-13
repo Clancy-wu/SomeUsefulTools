@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#$ -N sub_all
+#$ -pe smp 4
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_fmriprep/logs
+#$ -t 1-4:1
+
+OMP_NUM_THREADS=10
+subject=`cat /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_fmriprep/sublist | head -n+${SGE_TASK_ID} | tail -n-1`
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+
+export TEMPLATEFLOW_HOME=${singularityDir}/TemplateFlow
+export SINGULARITYENV_TEMPLATEFLOW_HOME=/templateflow
+
+SMRIPREP_DIR=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_fmriprep/smriprep/
+##########
+
+#Run fmriprep
+singularity run --cleanenv \
+-B /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_fmriprep:/work_dir \
+-B /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_fmriprep/smriprep:/smriprep \
+-B ${TEMPLATEFLOW_HOME:-$HOME/.cache/templateflow}:/templateflow \
+${singularityDir}/fmriprep_latest.simg \
+/work_dir/BIDS/ /work_dir/fmriprep/ participant --participant-label ${subject} \
+--fs-license-file ${singularityDir}/license.txt \
+--fs-no-reconall \
+--skip_bids_validation \
+--ignore slicetiming fieldmaps \
+--derivatives anat=${SMRIPREP_DIR} \
+--output-space MNI152NLin6Asym:res-2 \
+--output-layout bids \
+--nprocs ${OMP_NUM_THREADS} --omp-nthreads ${OMP_NUM_THREADS} --mem 128000 \
+-w /work_dir/work \
+--resource-monitor \
+--notrack \
+--stop-on-first-crash
