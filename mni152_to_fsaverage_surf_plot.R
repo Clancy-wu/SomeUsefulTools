@@ -41,7 +41,8 @@ export(coloredmeshes, colorbar_legend = "");
 roi_file_name = 'gsp_mAmyg_RH_T'
 
 fsbrain.set.default.figsize(1200, 1200);
-print(paste0('projectMNI2fsaverage -s ', roi_file_name, '.nii.gz', ' -o surf/'))
+vol2surf = paste0('projectMNI2fsaverage -s ', roi_file_name, '.nii.gz', ' -o surf/')
+system(vol2surf)
 
 
 lh_file = paste0('surf/lh.', roi_file_name, '.allSub_RF_ANTs_MNI152_orig_to_fsaverage.nii.gz')
