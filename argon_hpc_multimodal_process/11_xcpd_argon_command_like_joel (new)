@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#$ -N xcpd_No_parcel
+#$ -pe smp 1
+#$ -q PINC,CCOM,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_kw/logs
+
+OMP_NUM_THREADS=10
+
+subject='20240930'
+
+#Set up dependencies
+singularityDir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools
+#Run qsiprep
+singularity run --cleanenv \
+-B /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/test_kw:/data \
+${singularityDir}/xcp_d-latest.simg \
+/data/fmriprep_kw/ /data/xcp_d/ participant --participant-label ${subject} \
+--nthreads 10 --omp-nthreads 10 --mem-gb 20 \
+--input-type fmriprep \
+--dummy-scans auto \
+-p 36P \
+--fd-thresh 0.5 \
+--min-time 0 \
+--lower-bpf 0.008 \
+--upper-bpf 0.08 \
+--smoothing 6 \
+--skip-parcellation \
+-w /data/work \
+--fs-license-file ${singularityDir}/license.txt \
+--resource-monitor \
+--stop-on-first-crash
