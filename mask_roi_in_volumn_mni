@@ -1,8 +1,9 @@
 # Step 1: tranform MNI coordinate to voxel location in FSLeyes
 
 # Step 2: locate coordinate
-#### x,y,z is the voxel coord, not scan coord
-fslmaths MNI152_T1_2mm_brain.nii.gz -roi x 1 y 1 z 1 0 1 tmp
+#### x,y,z is the voxel coord, not scan coord, look in FSLeyes
+fslmaths IMAGE.NII -mul 0 -add 1 -roi 79 1 75 1 22 1 0 1 PONSpoint
+fslmaths PONSpoint -kernel sphere 7 -dilM PONSsphere7
 
 # Step 3: make sphere ROI mask
 fslmaths tmp -kernel sphere 10 -fmean -bin sphere
