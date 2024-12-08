@@ -94,3 +94,96 @@ for i_vertex in range(n_vertices):
     kcc[i_vertex] = 12 * kc / (denom)
 
 print(kcc)
+
+######################################################################################
+from nilearn import image
+from scipy import signal
+
+def compute_alff_wk(gsp_file):
+    sub_name = re.findall(r'(sub-.*)_bld001', os.path.basename(gsp_file))[0]
+    low_pass = 0.08
+    high_pass = 0.0001
+    TR = 3.0    
+    # 48.98s
+    gsp_img = image.load_img(gsp_file)
+    file_data = gsp_img.get_fdata()
+    data_matrix = file_data.reshape((file_data.shape[0]*file_data.shape[1]*file_data.shape[2], file_data.shape[3]))
+    fs = 1 / TR
+    n_voxels, n_volumes = data_matrix.shape
+    alff = np.zeros(n_voxels) # initial the voxel
+    for i_voxel in range(n_voxels):
+        voxel_data = data_matrix[i_voxel, :]
+        if np.std(voxel_data) == 0:
+            alff[i_voxel] = 0
+            continue
+        sd_scale = np.std(voxel_data)
+        voxel_data -= np.mean(voxel_data)
+        voxel_data /= np.std(voxel_data)
+        frequencies_hz, power_spectrum = signal.periodogram(voxel_data, fs, scaling="spectrum")
+        power_spectrum_sqrt = np.sqrt(power_spectrum)
+        if high_pass == 0:
+            high_pass = frequencies_hz[0]
+        if low_pass == 0:
+            low_pass = frequencies_hz[-1]
+        ff_alff = [np.argmin(np.abs(frequencies_hz - high_pass)), np.argmin(np.abs(frequencies_hz - low_pass))]
+        alff[i_voxel] = len(ff_alff) * np.mean(power_spectrum_sqrt[ff_alff[0] : ff_alff[1]])
+        alff[i_voxel] *= sd_scale
+    alff = alff[:, None]
+    alff_data = alff.reshape((file_data.shape[0], file_data.shape[1], file_data.shape[2], 1))
+    # extract
+    alff_img = image.new_img_like(ref_niimg=gsp_file, data=alff_data)
+    atlas = 'BN_Atlas_274_combined_resample_gsp.nii.gz'
+    measure_data = regions.img_to_signals_labels(alff_img, labels_img=atlas, keep_masked_labels=False)
+    return np.append(sub_name,measure_data[0])
+
+#gsp_dir = '/home/kangwu/LSS/jianglab/3_Data_Working/GSP1000_v2_dataset'
+#gsp_data = glob(os.path.join(gsp_dir, '*', 'func', '*bld001*.nii.gz')) # 1000
+#future_results = run(compute_alff_wk, gsp_data)
+#pure_future_results = [x for x in future_results if x is not None]
+#df_out = pd.DataFrame(pure_future_results, columns=['subject']+['ROI-'+str(i) for i in range(1,275)])
+#df_out.to_csv(os.path.join('alff/rest_gsp1000_Filter0001-08_ALFF.csv'), index=None)
+
+######################################################################################
+def compute_alff_wk(gsp_file):
+    sub_name = re.findall(r'(sub-.*)_bld001', os.path.basename(gsp_file))[0]
+    low_pass = 0.08
+    high_pass = 0.01
+    TR = 3.0    
+    # 48.98s
+    gsp_img = image.load_img(gsp_file)
+    file_data = gsp_img.get_fdata()
+    data_matrix = file_data.reshape((file_data.shape[0]*file_data.shape[1]*file_data.shape[2], file_data.shape[3]))
+    fs = 1 / TR
+    n_voxels, n_volumes = data_matrix.shape
+    alff = np.zeros(n_voxels) # initial the voxel
+    for i_voxel in range(n_voxels):
+        voxel_data = data_matrix[i_voxel, :]
+        if np.std(voxel_data) == 0:
+            alff[i_voxel] = 0
+            continue
+        sd_scale = np.std(voxel_data)
+        voxel_data -= np.mean(voxel_data)
+        voxel_data /= np.std(voxel_data)
+        frequencies_hz, power_spectrum = signal.periodogram(voxel_data, fs, scaling="spectrum")
+        power_spectrum_sqrt = np.sqrt(power_spectrum)
+        if high_pass == 0:
+            high_pass = frequencies_hz[0]
+        if low_pass == 0:
+            low_pass = frequencies_hz[-1]
+        ff_alff = [np.argmin(np.abs(frequencies_hz - high_pass)), np.argmin(np.abs(frequencies_hz - low_pass))]
+        alff[i_voxel] = len(ff_alff) * np.mean(power_spectrum_sqrt[ff_alff[0] : ff_alff[1]])
+        alff[i_voxel] *= sd_scale
+    alff = alff[:, None]
+    alff_data = alff.reshape((file_data.shape[0], file_data.shape[1], file_data.shape[2], 1))
+    # extract
+    alff_img = image.new_img_like(ref_niimg=gsp_file, data=alff_data)
+    atlas = 'BN_Atlas_274_combined_resample_gsp.nii.gz'
+    measure_data = regions.img_to_signals_labels(alff_img, labels_img=atlas, keep_masked_labels=False)
+    return np.append(sub_name,measure_data[0])
+
+gsp_dir = '/home/kangwu/LSS/jianglab/3_Data_Working/GSP1000_v2_dataset'
+gsp_data = glob(os.path.join(gsp_dir, '*', 'func', '*bld001*.nii.gz')) # 1000
+future_results = run(compute_alff_wk, gsp_data)
+pure_future_results = [x for x in future_results if x is not None]
+df_out = pd.DataFrame(pure_future_results, columns=['subject']+['ROI-'+str(i) for i in range(1,275)])
+df_out.to_csv(os.path.join('alff/rest_gsp1000_Filter01-08_ALFF.csv'), index=None)
