@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#$ -N vol2surf
+#$ -pe smp 1
+#$ -q PINC,UI
+#$ -j y
+#$ -o /Shared/jianglab/3_Data_Working/fmriprep_processed_wk/tmsfmri_allsite_surface/logs
+OMP_NUM_THREADS=5
+
+# ants
+export ANTS_PATH=/Shared/pinc/sharedopt/apps/ants/Linux/x86_64/2.5.2
+export PATH=$PATH:$ANTS_PATH/bin/
+# freesurfer
+export FREESURFER_HOME=/Shared/pinc/sharedopt/apps/freesurfer/Linux/x86_64/7.3.2
+export SUBJECTS_DIR=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/rest_fmriprep/fmriprep_surf/sourcedata/freesurfer
+export FS_LICENSE=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/fmriprep_tools/license.txt
+source $FREESURFER_HOME/SetUpFreeSurfer.sh
+
+sub_fmriprep=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/tmsfmri_fmriprep/fmriprep
+sub_out_dir=/Shared/jianglab/3_Data_Working/fmriprep_processed_wk/tmsfmri_allsite_surface
+
+echo mni2t1
+
+sub_input=${sub_fmriprep}/sub-1003/func/sub-1003_task-LpMFG_space-MNI152NLin6Asym_res-2_desc-preproc_bold.nii.gz
+sub_ref=${sub_fmriprep}/sub-1003/anat/sub-1003_desc-preproc_T1w.nii.gz
+sub_trans=${sub_fmriprep}/sub-1003/anat/sub-1003_from-MNI152NLin6Asym_to-T1w_mode-image_xfm.h5
+sub_out=${sub_out_dir}/sub-1003_task-LpMFG_space-T1_desc-preproc_bold.nii.gz
+
+#antsApplyTransforms -e 4 -i ${sub_input} -r ${sub_ref} -o ${sub_out} -t ${sub_trans} -n Linear --float
+
+#echo t12surf
+
+sub_surf_src=${sub_out}
+sub_surf_lh=${sub_out_dir}/sub-1003_space-fsaverage5_hemi-lh_preproc_bold_MniT1FsnativeFsaverage5.gii
+sub_surf_rh=${sub_out_dir}/sub-1003_space-fsaverage5_hemi-rh_preproc_bold_MniT1FsnativeFsaverage5.gii
+
+echo lh
+mri_vol2surf --src ${sub_surf_src} --out ${sub_surf_lh} --hemi lh --regheader sub-1003 --trgsubject fsaverage5
+
+echo rh
+mri_vol3surf --src ${sub_surf_src} --out ${sub_surf_rh} --hemi rh --regheader sub-1003 --trgsubject fsaverage5
+
+echo done.
