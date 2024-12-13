@@ -7,7 +7,7 @@ def dir_rename(dir, new_name):
     # dir is the basename
     old_dir = os.path.join(work_dir, dir)
     new_dir = os.path.join(target_dir, new_name)
-    os.mkdir(new_dir)
+    os.makedirs(new_dir, exist_ok=True)
     transfer_command = f'/home/clancy/MRIcroGL/Resources/dcm2niix -f "%t_%c_%d_%n" -p y -z y -ba n -o {new_dir} {old_dir}'
     os.system(transfer_command)
     return dir,new_name
