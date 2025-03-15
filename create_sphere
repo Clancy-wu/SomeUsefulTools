@@ -1,0 +1,43 @@
+from nilearn import datasets, plotting
+from nilearn.masking import _unmask_3d
+from nilearn.maskers import nifti_spheres_masker
+import nibabel as nib
+from nibabel import Nifti1Image
+
+# let's assume we are in MNI space
+brain_mask = datasets.load_mni152_brain_mask()
+
+_, A = nifti_spheres_masker._apply_mask_and_get_affinity(
+    seeds=[(-42, -36, 16)],
+    niimg=None,
+    radius=10,
+    allow_overlap=False, 
+    mask_img=brain_mask)
+
+sphere_mask = _unmask_3d(
+    X=A.toarray().flatten(), 
+    mask=brain_mask.get_fdata().astype(bool))
+
+sphere_mask = Nifti1Image(sphere_mask, brain_mask.affine)
+
+nib.save(sphere_mask, "sphere.nii.gz")
+
+
+################################################################
+
+def make_sphere(file, x, y, z, radius, file_outname):
+    # file shuold be mask including 1 & 0
+    brain_mask = file
+    _, A = nifti_spheres_masker._apply_mask_and_get_affinity(
+            seeds=[(x, y, z)],
+            niimg=None,
+            radius=radius,
+            allow_overlap=False, 
+            mask_img=brain_mask
+            )
+    sphere_mask = _unmask_3d(
+            X=A.toarray().flatten(), 
+            mask=brain_mask.get_fdata().astype(bool)
+            )
+    sphere_mask = Nifti1Image(sphere_mask, brain_mask.affine)
+    return nib.save(sphere_mask, file_outname)
