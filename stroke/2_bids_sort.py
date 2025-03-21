@@ -133,7 +133,7 @@ if __name__ == '__main__':
         "Acknowledgements": "No",
         }
     with open(os.path.join(bids, 'dataset_description.json'), 'w') as json_file:
-        json.dump(dataset_description, json_file)
+        json.dump(dataset_description, json_file, indent=4)
         
     print('finished.')
 #### end. author@kangwu.
