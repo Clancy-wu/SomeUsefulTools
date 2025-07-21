@@ -10,6 +10,7 @@ def transform_to_fa(sub):
     dwi_mask = f"qsiprep/{sub}/dwi/{sub}_space-T1w_desc-brain_mask.nii.gz"
     dwi_prepare = f"qsiprep/{sub}/dwi/{sub}_space-T1w_desc-preproc_dwi.nii.gz"
     dwi_tensor = f"Results/Tensor/{sub}_space-T1w_desc-preproc_dwitensor.nii.gz"
+    os.makedirs('Results/Tensor', exist_ok=True);os.makedirs('Results/FA', exist_ok=True)
     Command_tensor = f"dwi2tensor -grad {dwi_b} -mask {dwi_mask} {dwi_prepare} {dwi_tensor}"
     os.system(Command_tensor)
     dwi_fa = f"Results/FA/{sub}_space-T1w_desc-preproc_fa.nii.gz"
