@@ -95,8 +95,12 @@ apply_affine(img_affine, [26, 30, 16])
 from nibabel.affines import apply_affine
 apply_affine(np.linalg.inv(img_affine), [0, -4.212, 8.466])
 > array([26., 30., 16.])
-# save result
-np.round(apply_affine(np.linalg.inv(atlas_img.affine), [57.5, -54.5, 23.5]), 0)
+# 4.2 coord to voxel (save result)
+from nibabel.affines import apply_affine
+voxel = apply_affine(np.linalg.inv(atlas_img.affine), [57.5, -54.5, 23.5])
+voxel_idx = np.rint(voxel).astype(int)   # round to nearest int
+value = atlas_img.get_fdata()[tuple(voxel_idx)]
+print(value)
 
 Actually, the apply_affine is to np.dot !!!
 
